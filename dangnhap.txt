@@ -1,0 +1,3 @@
+2
+quocdat dat 1
+dat dat 0
