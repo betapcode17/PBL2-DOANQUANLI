@@ -5,9 +5,9 @@
 #include "menu_table.h"
 #include "menu.h"
 #include "Order.h"
+ Order order;
 LinkedList L;
 Users users;
-Order order;
 Menu admin;
 Menu user;
 using namespace std;
@@ -19,7 +19,7 @@ void ShowMenuAdmin()
     while (!exitFlag)
     {
         system("cls");
-        choice = MENU(menu, menuSize, 41, 9, 28, 2, 40, 7, 30);
+        choice = MENU(menu, menuSize, 41, 9, 30, 2, 40, 7, 40, 1);
         switch (choice)
         {
         case 0:
@@ -28,7 +28,7 @@ void ShowMenuAdmin()
             while (!crudMenuExit)
             {
                 system("cls");
-                int i = MENU(menuCRUD, menuCRUDSize, 41, 9, 30, 2, 40, 7, 40);
+                int i = MENU(menuCRUD, menuCRUDSize, 41, 9, 30, 2, 40, 7, 40, 1);
                 switch (i)
                 {
                 case 0:
@@ -37,7 +37,7 @@ void ShowMenuAdmin()
                     while (!readMenuExit)
                     {
                         system("cls");
-                        int b = MENU(menuRead, menuReadSize, 41, 9, 30, 2, 40, 7, 45);
+                        int b = MENU(menuRead, menuReadSize, 41, 9, 30, 2, 40, 7, 45, 1);
 
                         switch (b)
                         {
@@ -52,7 +52,7 @@ void ShowMenuAdmin()
                             while (!searchMenuExit)
                             {
                                 system("cls");
-                                int s = MENU(menuSearch, menuSearchSize, 41, 9, 30, 2, 40, 7, 40);
+                                int s = MENU(menuSearch, menuSearchSize, 41, 9, 30, 2, 40, 7, 40, 1);
 
                                 switch (s)
                                 {
@@ -89,7 +89,7 @@ void ShowMenuAdmin()
                             while (!sortMenuExit)
                             {
                                 system("cls");
-                                int s = MENU(menuSort, menuSortSize, 41, 9, 30, 2, 40, 7, 40);
+                                int s = MENU(menuSort, menuSortSize, 41, 9, 30, 2, 40, 7, 40, 1);
 
                                 switch (s)
                                 {
@@ -101,7 +101,7 @@ void ShowMenuAdmin()
                                     while (!sortUpandDown)
                                     {
                                         system("cls");
-                                        int t = MENU(menuSortUpandDown, menuUpandDownSize, 41, 9, 30, 2, 40, 7, 40);
+                                        int t = MENU(menuSortUpandDown, menuUpandDownSize, 41, 9, 30, 2, 40, 7, 40, 1);
 
                                         switch (t)
                                         {
@@ -194,7 +194,7 @@ void ShowMenuUser()
     while (!exitFlag)
     {
         system("cls");
-        choice = MENU(menuUser, menuUserSize, 41, 9, 28, 2, 40, 7, 30);
+        choice = MENU(menuUser, menuUserSize, 41, 9, 30, 2, 40, 7, 40, 0);
 
         switch (choice)
         {
@@ -204,7 +204,7 @@ void ShowMenuUser()
             while (!readMenuExit)
             {
                 system("cls");
-                int b = MENU(menuRead, menuReadSize, 41, 9, 30, 2, 40, 7, 45);
+                int b = MENU(menuRead, menuReadSize, 41, 9, 30, 2, 40, 7, 45, 0);
 
                 switch (b)
                 {
@@ -219,7 +219,7 @@ void ShowMenuUser()
                     while (!searchMenuExit)
                     {
                         system("cls");
-                        int s = MENU(menuSearch, menuSearchSize, 41, 9, 30, 2, 40, 7, 40);
+                        int s = MENU(menuSearch, menuSearchSize, 41, 9, 30, 2, 40, 7, 40, 0);
 
                         switch (s)
                         {
@@ -256,7 +256,7 @@ void ShowMenuUser()
                     while (!sortMenuExit)
                     {
                         system("cls");
-                        int s = MENU(menuSort, menuSortSize, 41, 9, 30, 2, 40, 7, 40);
+                        int s = MENU(menuSort, menuSortSize, 41, 9, 30, 2, 40, 7, 40, 0);
 
                         switch (s)
                         {
@@ -268,7 +268,7 @@ void ShowMenuUser()
                             while (!sortUpandDown)
                             {
                                 system("cls");
-                                int t = MENU(menuSortUpandDown, menuUpandDownSize, 41, 9, 30, 2, 40, 7, 40);
+                                int t = MENU(menuSortUpandDown, menuUpandDownSize, 41, 9, 30, 2, 40, 7, 40, 0);
 
                                 switch (t)
                                 {
@@ -332,7 +332,8 @@ void ShowMenuUser()
 }
 void Process()
 {
-    int login = users.login();
+while(true){
+	    int login = users.login();
     system("cls");
     if (login)
     {
@@ -347,7 +348,9 @@ void Process()
         ShowMenuUser();
     }
 }
+}
 int main()
 {
-    Process();
+   Process();
+   //order.ProcessOrder();
 }

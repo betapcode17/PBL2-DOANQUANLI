@@ -84,7 +84,7 @@ inline void thanh_sang(int x, int y, int w, int h, int b_color, wstring menuItem
     // Màu mặc định: chữ trắng, nền đen
 }
 
-inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, int boxX, int boxY, int boxW)
+inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, int boxX, int boxY, int boxW, int i)
 {
     SetConsoleOutputCP(CP_UTF8);
     _setmode(_fileno(stdout), _O_U16TEXT);
@@ -95,6 +95,13 @@ inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, i
     int currentItem = 0;
 
     // Draw box for menu
+    menuTable(boxX, boxY - 3, boxW, 2);
+    // writeString(boxX + 5, boxY - 2, L"MENU");
+    gotoXY(boxX + 14, boxY - 2);
+    if (i == 1)
+        wcout << "MENU ADMIN";
+    else
+        wcout << "MENU USER";
     menuTable(boxX, boxY, boxW, menuSize * 3 + 4);
 
     // Print all menu items with default color
@@ -167,7 +174,7 @@ inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, i
 
 inline void Thong_Tin()
 {
-    int x = 50, y = 5;
+    int x = 55, y = 5;
     while (true)
     {
         menuTable(x + 29, y + 2, 65, 19);

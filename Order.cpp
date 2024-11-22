@@ -1,6 +1,8 @@
 #include "HeThong.h"
 #include "Order.h"
 #include "condition.h"
+#include <algorithm> // For std::all_of
+#include <cctype>    // For ::isdigit
 using namespace std;
 Order::Order()
 {
@@ -19,6 +21,10 @@ Order::~Order()
     // Giải phóng mảng bookCode và bookCount
     delete[] bookCode;
     delete[] bookCount;
+}
+void Order::reset()
+{
+    types = 0;
 }
 void Order ::Display_product()
 {
@@ -62,14 +68,36 @@ void Order::Add_Product()
     menuTable(x + 90, y - 1, 25, 2);
     writeString(x + 1, y + 4, L"[ THÔNG TIN SẢN PHẨM ]");
     menuDisplay(x + 1, y + 6, 20, 1, 1);
-    Display_product();
+    if (types != 0)
+    {
+        Display_product();
+    }
     gotoXY(x + 24, y);
     cout << string(20, ' '); // Xóa nội dung cũ
     gotoXY(x + 102, y);
     cout << string(10, ' ');
+
     while (true)
     {
-        // Nhập mã sách
+        int xc, yc;
+        gotoXY(x + 24, y);
+        cout << string(20, ' '); // Xóa nội dung trong ô nhập mã sách
+        gotoXY(x + 102, y);
+        cout << string(10, ' ');
+        setClick(xc, yc);
+        if (122 <= xc && xc <= 148 && 0 <= yc && yc <= 3)
+        {
+            this->ShowAllBook();
+            Display_product();
+        }
+        writeString(x + 125, y, L"Xem thông tin sách");
+        menuTable(x + 120, y - 1, 25, 2);
+        writeString(x, y, L"[Nhập mã sách cần bán]");
+        menuTable(x + 23, y - 1, 25, 2);
+        writeString(x + 70, y, L"[Nhập số lượng:]");
+        menuTable(x + 90, y - 1, 25, 2);
+        writeString(x + 1, y + 4, L"[ THÔNG TIN SẢN PHẨM ]");
+        menuDisplay(x + 1, y + 6, 20, 1, 1);
         while (true)
         {
             gotoXY(x + 24, y);
@@ -163,6 +191,11 @@ void Order::confirm()
     {
         // Clear the screen and redraw menu
         system("cls");
+        if (types == 0)
+        {
+            menuTable(x + 50, y - 1, 50, 2);
+            writeString(x + 54, y, L" VUI LÒNG CHỌN SẢN PHẨM TRƯỚC KHI THANH TOÁN ");
+        }
         writeString(x, y, L"[ DANH SÁCH SẢN PHẨM ĐÃ CHỌN ]");
         Ordertable(x, y + 4, 20);
         a = 5;
@@ -309,12 +342,14 @@ void Order::confirm()
             }
             else if (selectedOption == 3)
             {
-                // Xử lý "Tiếp tục thanh toán"
-                for (int i = 0; i < types; i++)
+                if (types != 0)
                 {
-                    bookCode[i]->SetSo_Luong(bookCode[i]->getSo_luong() - bookCount[i]);
+                    for (int i = 0; i < types; i++)
+                    {
+                        bookCode[i]->SetSo_Luong(bookCode[i]->getSo_luong() - bookCount[i]);
+                    }
+                    break; // Thoát khỏi vòng lặp menu để tiếp tục thanh toán
                 }
-                break; // Thoát khỏi vòng lặp menu để tiếp tục thanh toán
             }
         }
     }
@@ -421,14 +456,14 @@ void Order::bill()
             cus = cus->next;
         }
 
-        if (cusCode.length() > 2)
+        if (cusCode.length() > 2 && std::all_of(cusCode.begin() + 2, cusCode.end(), ::isdigit))
         {
             int numberPart = std::stoi(cusCode.substr(2)) + 1;
             cusCode = "KH" + std::to_string(numberPart).insert(0, 3 - std::to_string(numberPart).length(), '0');
         }
         else
         {
-            cusCode = "KH001"; // Default customer code if none exists
+            cusCode = "KH001"; // Default customer code
         }
 
         // Create and add a new customer
@@ -465,6 +500,14 @@ void Order::bill()
     }
     system("cls");
     y = 3;
+    cus = this->customerHead;
+    cusCode;
+    while (cus != NULL)
+    {
+        cusCode = cus->data.getMaKH();
+        cus = cus->next;
+    }
+    newCusCode = cusCode;
     writeString(x + 28, y, L"[ HÓA ĐƠN BÁN HÀNG ]");
     writeString(x, y + 2, L"Tên khách hàng:");
     gotoXY(x + 20, y + 2);
@@ -510,7 +553,10 @@ void Order::bill()
     int n;
     infile >> n; // Read the number of records
     infile.ignore();
-    // Read the existing records (if necessary)
+    // Initialize variables to keep track of the last valid bill code
+    std::string lastBillCode = "HD000"; // Default value if no records are present
+
+    // Read the existing records
     for (int i = 1; i <= n; ++i)
     {
         getline(infile, maHoaDon, '|');
@@ -520,25 +566,42 @@ void Order::bill()
         infile.ignore(1);
         infile >> tongTien;
         infile.ignore(1);
+
+        // Keep track of the last bill code
+        if (!maHoaDon.empty())
+            lastBillCode = maHoaDon;
     }
     infile.close();
-    n += 1;
-    int numberPart = std::stoi(maHoaDon.substr(2)) + 1;
-    maHoaDon = "HD" + std::string(3 - std::to_string(numberPart).length(), '0') + std::to_string(numberPart);
+
+    // Increment the last bill code to generate a new one
+    if (lastBillCode.length() > 2 && std::all_of(lastBillCode.begin() + 2, lastBillCode.end(), ::isdigit))
+    {
+        int numberPart = std::stoi(lastBillCode.substr(2)) + 1;
+        maHoaDon = "HD" + std::string(3 - std::to_string(numberPart).length(), '0') + std::to_string(numberPart);
+    }
+    else
+    {
+        maHoaDon = "HD001"; // Default bill code
+    }
+
     std::ofstream outfile("bill.txt", std::ios::in);
     if (!outfile)
     {
         std::cerr << "File could not be opened for writing!" << std::endl;
         return;
     }
+    n += 1;
     outfile << n << "\n";
     outfile.seekp(0, std::ios::end);
+    int quantity = 0, total = 0;
     for (int i = 0; i < types; i++)
     {
-        outfile << "\n"
-                << maHoaDon << "|" << newCusCode << "|" << billDay << "|" << bookCount[i]
-                << "|" << bookCode[i]->getGia_ban() * bookCount[i];
+        quantity += bookCount[i];
+        total += bookCode[i]->getGia_ban() * bookCount[i];
     }
+    outfile << "\n"
+            << maHoaDon << "|" << newCusCode << "|" << billDay << "|" << quantity
+            << "|" << total;
     outfile.close();
     // Wait for Esc to exit
     while (true)
@@ -558,6 +621,7 @@ long long Order::Calculator()
     }
     return sum;
 }
+
 void Order::ProcessOrder()
 {
     Add_Product();
@@ -572,4 +636,5 @@ void Order::ProcessOrder()
             delete_Node_Book(*DeleteBook); // Xóa sách khỏi hệ thống
         }
     }
+    reset();
 }

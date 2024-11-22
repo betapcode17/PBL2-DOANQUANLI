@@ -16,4 +16,5 @@ public:
     void confirm();
     void bill();
     long long Calculator();
+    void reset();
 };

@@ -889,7 +889,7 @@ void Menu::search_book(int x)
     }
 }
 void WriteBookToFile(const string &bookID, const string &bookName, const string &bookGenre,
-                     const string &bookAuthor, int publicationYear, int quantity, int price)
+                     const string &bookAuthor, int quantity, int price, int publicationYear)
 {
     // Mở file để đọc
     std::ifstream inFile("books.txt");
@@ -932,7 +932,7 @@ void WriteBookToFile(const string &bookID, const string &bookName, const string 
             bookFound = true;
             // Ghi dữ liệu sách mới vào bộ đệm tạm khi tìm thấy
             tempBuffer << bookID << "|" << bookName << "|" << bookGenre << "|" << bookAuthor << "|"
-                       << publicationYear << "|" << quantity << "|" << price << "\n";
+                       << quantity << "|" << price << "|" << publicationYear << "\n";
         }
         else
         {
@@ -948,7 +948,7 @@ void WriteBookToFile(const string &bookID, const string &bookName, const string 
     {
         totalBooks += 1; // Tăng tổng số sách lên 1
         tempBuffer << bookID << "|" << bookName << "|" << bookGenre << "|" << bookAuthor << "|"
-                   << publicationYear << "|" << quantity << "|" << price << "\n";
+                   << quantity << "|" << price << "|" << publicationYear << "\n";
     }
 
     // Ghi lại nội dung mới vào file, bao gồm dòng tổng số sách ở đầu
@@ -1056,7 +1056,7 @@ bool Menu::CreateBook()
             {
                 try
                 {
-                    int year = stoi(nam_xuat_ban);
+                    year = stoi(nam_xuat_ban);
                     gotoXY(x + 104, y + 4);
                     cout << nam_xuat_ban;
                     break;
@@ -1082,7 +1082,7 @@ bool Menu::CreateBook()
             {
                 try
                 {
-                    int so_luong = stoi(quantity);
+                    so_luong = stoi(quantity);
                     gotoXY(x + 125, y + 4);
                     cout << so_luong;
                     break;
@@ -1108,7 +1108,7 @@ bool Menu::CreateBook()
             {
                 try
                 {
-                    int gia_ban = stoi(price);
+                    gia_ban = stoi(price);
                     gotoXY(x + 136, y + 4);
                     cout << gia_ban;
                     break;
@@ -1125,7 +1125,7 @@ bool Menu::CreateBook()
         }
         Book newBook(bookID, bookName, bookGenre, bookAuthor, year, so_luong, gia_ban);
         Insert_NodeLast(newBook);
-        WriteBookToFile(bookID, bookName, bookGenre, bookAuthor, year, so_luong, gia_ban);
+        WriteBookToFile(bookID, bookName, bookGenre, bookAuthor, so_luong, gia_ban, year);
         int numberPart = std::stoi(bookID.substr(1)) + 1;
         bookID = "B" + std::string(3 - std::to_string(numberPart).length(), '0') + std::to_string(numberPart);
         // system("cls");
@@ -1354,7 +1354,7 @@ bool Menu::UpdateBook()
         }
     }
     WriteBookToFile(update->getMa_Sach(), update->getTen_sach(), update->getThe_loai(),
-                    update->getTac_gia(), update->getNam_xuat_ban(), update->getSo_luong(), update->getGia_ban());
+                    update->getTac_gia(), update->getSo_luong(), update->getGia_ban(), update->getNam_xuat_ban());
     Insert_NodeMiddle(*update, position - 1);
     return true;
 }
@@ -1715,9 +1715,6 @@ void Menu::statistical()
                             menuTable(x, y - 3, 60, 2);
                             writeString(x + 15, y - 2, L"[THỐNG KÊ CHI TIẾT TRONG THÁNG]");
                             menuTable(x, y, 60, 15);
-                            writeString(x + 2, y + 2, L"Tổng số mặt hàng sách bán trong tháng:");
-                            gotoXY(x + 40, y + 2);
-                            cout << sum_BookDetail;
                             writeString(x + 2, y + 4, L"Tổng số lượng sách đã bán:");
                             gotoXY(x + 30, y + 4);
                             cout << sum_productsdetail;
