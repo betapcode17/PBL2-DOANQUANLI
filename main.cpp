@@ -5,7 +5,7 @@
 #include "menu_table.h"
 #include "menu.h"
 #include "Order.h"
- Order order;
+Order order;
 LinkedList L;
 Users users;
 Menu admin;
@@ -15,10 +15,11 @@ void ShowMenuAdmin()
 {
     int choice;
     bool exitFlag = false;
-
+   
     while (!exitFlag)
     {
         system("cls");
+        SetConsoleBackgroundToGray();
         choice = MENU(menu, menuSize, 41, 9, 30, 2, 40, 7, 40, 1);
         switch (choice)
         {
@@ -28,6 +29,7 @@ void ShowMenuAdmin()
             while (!crudMenuExit)
             {
                 system("cls");
+                SetConsoleBackgroundToGray();
                 int i = MENU(menuCRUD, menuCRUDSize, 41, 9, 30, 2, 40, 7, 40, 1);
                 switch (i)
                 {
@@ -37,12 +39,14 @@ void ShowMenuAdmin()
                     while (!readMenuExit)
                     {
                         system("cls");
+                        SetConsoleBackgroundToGray();
                         int b = MENU(menuRead, menuReadSize, 41, 9, 30, 2, 40, 7, 45, 1);
 
                         switch (b)
                         {
                         case 0:
                         {
+
                             admin.ShowAllBook();
                             break;
                         }
@@ -52,6 +56,7 @@ void ShowMenuAdmin()
                             while (!searchMenuExit)
                             {
                                 system("cls");
+                                SetConsoleBackgroundToGray();
                                 int s = MENU(menuSearch, menuSearchSize, 41, 9, 30, 2, 40, 7, 40, 1);
 
                                 switch (s)
@@ -89,6 +94,7 @@ void ShowMenuAdmin()
                             while (!sortMenuExit)
                             {
                                 system("cls");
+                                SetConsoleBackgroundToGray();
                                 int s = MENU(menuSort, menuSortSize, 41, 9, 30, 2, 40, 7, 40, 1);
 
                                 switch (s)
@@ -101,6 +107,7 @@ void ShowMenuAdmin()
                                     while (!sortUpandDown)
                                     {
                                         system("cls");
+                                        SetConsoleBackgroundToGray();
                                         int t = MENU(menuSortUpandDown, menuUpandDownSize, 41, 9, 30, 2, 40, 7, 40, 1);
 
                                         switch (t)
@@ -163,6 +170,7 @@ void ShowMenuAdmin()
         }
         case 1:
         {
+            SetConsoleBackgroundToGray();
             admin.ShowAllCus();
             break;
         }
@@ -170,12 +178,14 @@ void ShowMenuAdmin()
         {
             // thống kê
             system("cls");
+            SetConsoleBackgroundToGray();
             admin.statistical();
             break;
         }
         case 3:
         {
             // thoát
+            SetConsoleBackgroundToGray();
             Thong_Tin();
             break;
         }
@@ -194,6 +204,7 @@ void ShowMenuUser()
     while (!exitFlag)
     {
         system("cls");
+        SetConsoleBackgroundToGray();
         choice = MENU(menuUser, menuUserSize, 41, 9, 30, 2, 40, 7, 40, 0);
 
         switch (choice)
@@ -204,12 +215,14 @@ void ShowMenuUser()
             while (!readMenuExit)
             {
                 system("cls");
+                SetConsoleBackgroundToGray();
                 int b = MENU(menuRead, menuReadSize, 41, 9, 30, 2, 40, 7, 45, 0);
 
                 switch (b)
                 {
                 case 0:
                 {
+                    SetConsoleBackgroundToGray();
                     user.ShowAllBook();
                     break;
                 }
@@ -219,6 +232,7 @@ void ShowMenuUser()
                     while (!searchMenuExit)
                     {
                         system("cls");
+                        SetConsoleBackgroundToGray();
                         int s = MENU(menuSearch, menuSearchSize, 41, 9, 30, 2, 40, 7, 40, 0);
 
                         switch (s)
@@ -226,21 +240,25 @@ void ShowMenuUser()
                         case 0:
                             // tìm kiếm sách theo tên
                             system("cls");
+                            SetConsoleBackgroundToGray();
                             user.search_book(1);
                             break;
                         case 1:
                             // tìm kiếm sách theo thể loại
                             system("cls");
+                            SetConsoleBackgroundToGray();
                             user.search_book(2);
                             break;
                         case 2:
                             // tìm kiếm sách theo tác giả
                             system("cls");
+                            SetConsoleBackgroundToGray();
                             user.search_book(3);
                             break;
                         case 3:
                             // tìm kiếm sách theo năm xuất bản
                             system("cls");
+                            SetConsoleBackgroundToGray();
                             user.search_book(4);
                             break;
                         case 4:
@@ -256,6 +274,7 @@ void ShowMenuUser()
                     while (!sortMenuExit)
                     {
                         system("cls");
+                        SetConsoleBackgroundToGray();
                         int s = MENU(menuSort, menuSortSize, 41, 9, 30, 2, 40, 7, 40, 0);
 
                         switch (s)
@@ -268,6 +287,7 @@ void ShowMenuUser()
                             while (!sortUpandDown)
                             {
                                 system("cls");
+                                SetConsoleBackgroundToGray();
                                 int t = MENU(menuSortUpandDown, menuUpandDownSize, 41, 9, 30, 2, 40, 7, 40, 0);
 
                                 switch (t)
@@ -304,6 +324,7 @@ void ShowMenuUser()
         }
         case 1:
         {
+            SetConsoleBackgroundToGray();
             user.ShowAllCus();
             break;
         }
@@ -311,12 +332,15 @@ void ShowMenuUser()
         {
             system("cls");
             // user.Order();
+            SetConsoleBackgroundToGray();
             order.ProcessOrder();
+            user.ShowAllCus();
             break;
         }
         case 3:
         {
             // thoát
+            SetConsoleBackgroundToGray();
             Thong_Tin();
             break;
         }
@@ -332,25 +356,27 @@ void ShowMenuUser()
 }
 void Process()
 {
-while(true){
-	    int login = users.login();
-    system("cls");
-    if (login)
+    while (true)
     {
+        int login = users.login();
         system("cls");
-        admin.Start();
-        ShowMenuAdmin();
+        if (login)
+        {
+            system("cls");
+            admin.Start();
+            ShowMenuAdmin();
+        }
+        else
+        {
+            system("cls");
+            user.Start();
+            ShowMenuUser();
+        }
     }
-    else
-    {
-        system("cls");
-        user.Start();
-        ShowMenuUser();
-    }
-}
 }
 int main()
 {
-   Process();
-   //order.ProcessOrder();
+    Process();
+    // order.ProcessOrder();
+    admin.UpdateBook();
 }

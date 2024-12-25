@@ -94,58 +94,6 @@ void LinkedList::readCustomer(const string &fileName)
     }
     infile.close(); // Đóng file
 }
-// read
-//  Tìm kiếm theo tên sách,thể loại,tên,tác giả
-
-// Định nghĩa hàm đọc sách từ file
-void LinkedList::readBook(const string &fileName)
-{
-    ifstream infile(fileName);
-    if (!infile.is_open())
-    {
-        cout << "Could not open the file " << fileName << endl;
-        return;
-    }
-
-    int n; // Số lượng sách
-    infile >> n;
-    infile.ignore(); // Bỏ qua ký tự xuống dòng sau số lượng sách
-    BookNode *temp = nullptr;
-    for (int i = 0; i < n; ++i)
-    {
-        BookNode *newNode = new BookNode();
-        count++;
-        // Sử dụng getline để lấy mã sách
-        getline(infile, newNode->data.Ma_Sach, '|');
-
-        getline(infile, newNode->data.ten_sach, '|');
-        getline(infile, newNode->data.the_loai, '|');
-        getline(infile, newNode->data.tac_gia, '|');
-        infile >> newNode->data.so_luong;
-        infile.ignore(1, '|'); // Bỏ qua ký tự '|' sau so_luong
-        infile >> newNode->data.gia_ban;
-        infile.ignore(1, '|');                // Bỏ qua ký tự '|' sau gia_ban
-        infile >> newNode->data.nam_xuat_ban; // Đọc năm xuất bản
-        infile.ignore();                      // Bỏ qua ký tự xuống dòng
-
-        newNode->next = NULL;
-
-        if (bookHead == NULL)
-        {
-            // Nếu danh sách rỗng, node mới trở thành đầu danh sách
-            bookHead = newNode;
-        }
-        else
-        {
-            // Liên kết node mới vào cuối danh sách
-            temp->next = newNode;
-        }
-
-        temp = newNode; // Cập nhật temp để trỏ đến node cuối
-    }
-
-    infile.close(); // Đóng file
-}
 
 //=============================================== UPDATE BOOK=====================================//
 int LinkedList::find_Node_Book(const string &ma_sach)
@@ -330,6 +278,7 @@ bool LinkedList::Add_Customer(Customer B)
 {
     if (this->isEmpty())
     {
+
         customerHead = new CustomerNode();
         customerHead->data = B;
         customerHead->next = nullptr;

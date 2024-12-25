@@ -1,16 +1,26 @@
-15
-B001|The Spare Man|Fiction| Kowal|10|1500000|2020
-B002|FUTURE HOME|Science| Robinson|4|19900000|2024
-B003|The City & The City|Fantasy|China Miéville|7|180000|2024
-B004|Great North Road|Mystery| Hamilton|12|120000|2019
-B005|Educated|Biography|Tara Westover|3|150000|2021
-B006|Becoming|Biography|Michelle Obama|4|152000|2022
-B007|Steve Jobs|Biography|Walter Isaacson|15|164000|2018
-B008|The Glass Castle|Biography|Jeannette Walls|4|122000|2023
-BOOK009|When Breath Becomes Air|Biography|Paul Kalanithi|9|173000|2020
-B010|Dune|Science Fiction|Frank Herbert|6|111000|2024
-B011|Đắc Nhân Tâm|Self-Help|Dale Carnegie|11|123000|2022
-B012|Số Đỏ|Drama|Vũ Trọng Phụng|6|1800000|2023
-B013|Nhật Ký Trong Tù|Poetry|Hồ Chí Minh|9|112000|2021
-B014|Truyện Kiều|Classic|Nguyễn Du|10|200000|2017
-B015|Cánh Đồng Bất Tận|Thriller|Nguyễn Ngọc Tư|9|75000|2020
+25
+B001|Educated|Biography|Tara Westover|5|180000|2021
+B002|The City & The City|Fantasy|China Miéville|8|180000|2024
+B003|Great North Road|Mystery|Hamilton|10|120000|2019
+B004|Educated|Biography|Tara Westover|4|150000|2021
+B005|Becoming|Biography|Michelle Obama|3|152000|2022
+B006|Steve Jobs|Biography|Walter Isaacson|18|164000|2018
+B007|The Glass Castle|Biography|Jeannette Walls|5|122000|2023
+B008|Dune|Science Fiction|Frank Herbert|7|111000|2024
+B009|Đắc Nhân Tâm|Self-Help|Dale Carnegie|15|123000|2022
+B010|Số Đỏ|Drama|Vũ Trọng Phụng|6|1800000|2023
+B011|Nhật Ký Trong Tù|Poetry|Hồ Chí Minh|10|112000|2021
+B012|Truyện Kiều|Classic|Nguyễn Du|12|200000|2017
+B013|Cánh Đồng Bất Tận|Thriller|Nguyễn Ngọc Tư|10|75000|2020
+B014|Tắt Đèn|Classic|Ngô Tất Tố|14|130000|1939
+B015|Lão Hạc|Classic|Nam Cao|9|100000|1943
+B016|Hòn Đất|Historical|Anh Đức|6|150000|1966
+B017|Mắt Biếc|Romance|Nguyễn Nhật Ánh|13|140000|1990
+B018|Tôi Thấy Hoa Vàng|Drama|Nguyễn Nhật Ánh|10|150000|2005
+B019|Những Người Khốn Khổ|Drama|Nguyễn Công Hoan|5|120000|1936
+B020|Đất Rừng Phương Nam|Adventure|Đoàn Giỏi|7|135000|1957
+B021|The Midnight Library|Fantasy|Matt Haig|6|140000|2021
+B022|Atomic Habits|Self-Help|James Clear|14|180000|2018
+B023|The Subtle Art|Self-Help|Mark Manson|10|170000|2016
+B024|History of Tomorrow|Non-Fiction|Yuval Noah Harari|7|24000|2016
+B025|Doremon|cartoon|quoc dat|2|100000|2020

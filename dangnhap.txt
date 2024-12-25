@@ -1,3 +1,5 @@
-2
+4
 quocdat dat 1
 dat dat 0
+datto quocdat 0
+TranDat quocdat 0

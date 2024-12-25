@@ -5,6 +5,7 @@ class Menu : public LinkedList
 public:
     Menu();
     ~Menu();
+    void readBook(const string &fileName);
     void Start();
     void ShowAllCus();
     void ShowAllBook();
@@ -16,4 +17,5 @@ public:
     bool DeleteBook();
     bool CreateBook();
     void statistical();
+    void DeleteBookFromFile(const std::string &bookID);
 };

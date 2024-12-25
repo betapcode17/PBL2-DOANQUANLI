@@ -28,6 +28,9 @@ void Order::reset()
 }
 void Order ::Display_product()
 {
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x71);
     int x = 2, y = 2, a = 2;
     for (int i = 0; i < types; i++)
     {
@@ -58,15 +61,19 @@ void Order::Add_Product()
     int soluong;
     Book *foundBook = nullptr;
     int position;
-
+    SetConsoleBackgroundToGray();
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     // Hiển thị giao diện nhập
-    writeString(x + 125, y, L"Xem thông tin sách");
+
     menuTable(x + 120, y - 1, 25, 2);
-    writeString(x, y, L"[Nhập mã sách cần bán]");
+    writeString(x + 125, y, L"Xem thông tin sách", 0x74);
+    writeString(x, y, L"[Nhập mã sách cần bán]", 0x74);
     menuTable(x + 23, y - 1, 25, 2);
-    writeString(x + 70, y, L"[Nhập số lượng:]");
+    writeString(x + 70, y, L"[Nhập số lượng:]", 0x74);
     menuTable(x + 90, y - 1, 25, 2);
-    writeString(x + 1, y + 4, L"[ THÔNG TIN SẢN PHẨM ]");
+    writeString(x + 1, y + 4, L"[ THÔNG TIN SẢN PHẨM ]", 0x74);
     menuDisplay(x + 1, y + 6, 20, 1, 1);
     if (types != 0)
     {
@@ -90,13 +97,13 @@ void Order::Add_Product()
             this->ShowAllBook();
             Display_product();
         }
-        writeString(x + 125, y, L"Xem thông tin sách");
         menuTable(x + 120, y - 1, 25, 2);
-        writeString(x, y, L"[Nhập mã sách cần bán]");
+        writeString(x + 125, y, L"Xem thông tin sách", 0x74);
+        writeString(x, y, L"[Nhập mã sách cần bán]", 0x74);
         menuTable(x + 23, y - 1, 25, 2);
-        writeString(x + 70, y, L"[Nhập số lượng:]");
+        writeString(x + 70, y, L"[Nhập số lượng:]", 0x74);
         menuTable(x + 90, y - 1, 25, 2);
-        writeString(x + 1, y + 4, L"[ THÔNG TIN SẢN PHẨM ]");
+        writeString(x + 1, y + 4, L"[ THÔNG TIN SẢN PHẨM ]", 0x74);
         menuDisplay(x + 1, y + 6, 20, 1, 1);
         while (true)
         {
@@ -113,7 +120,7 @@ void Order::Add_Product()
             }
             else
             {
-                writeString(x + 23, y + 2, L"[Không tồn tại mã sách. Vui lòng nhập lại]");
+                writeString(x + 23, y + 2, L"[Không tồn tại mã sách. Vui lòng nhập lại]", 0x74);
             }
         }
 
@@ -132,12 +139,12 @@ void Order::Add_Product()
                 }
                 else
                 {
-                    writeString(x + 70, y + 2, L"[Số lượng vượt quá số lượng hiện có hoặc không hợp lệ]");
+                    writeString(x + 70, y + 2, L"[Số lượng vượt quá số lượng hiện có hoặc không hợp lệ]", 0x74);
                 }
             }
             catch (exception &e)
             {
-                writeString(x + 70, y + 2, L"[Đầu vào không hợp lệ. Vui lòng nhập số]");
+                writeString(x + 70, y + 2, L"[Đầu vào không hợp lệ. Vui lòng nhập số]", 0x74);
             }
         }
 
@@ -148,7 +155,7 @@ void Order::Add_Product()
             if (bookCode[i]->getMa_Sach() == masach)
             {
                 bookCount[i] += soluong; // Cộng dồn số lượng
-                writeString(x + 23, y + 3, L"[Sách đã tồn tại, số lượng được cập nhật]");
+                writeString(x + 23, y + 3, L"[Sách đã tồn tại, số lượng được cập nhật]", 0x74);
                 exists = true;
                 break;
             }
@@ -175,6 +182,10 @@ void Order::Add_Product()
 }
 void Order::confirm()
 {
+    SetConsoleBackgroundToGray();
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     string billDay, cusCode, newNameCus, newCusAddress, newCusSdt;
     int sum = 0;
     int x = 20, y = 2;
@@ -183,7 +194,7 @@ void Order::confirm()
     int selectedProduct;
     int keyInput;
     system("cls");
-    writeString(x, y, L"[ DANH SÁCH SẢN PHẨM ĐÃ CHỌN ]");
+    writeString(x, y, L"[ DANH SÁCH SẢN PHẨM ĐÃ CHỌN ]", 0x74);
     Ordertable(x, y + 4, 20);
     // Menu items positions
     int menuX = x, menuY = y + 30;
@@ -194,9 +205,9 @@ void Order::confirm()
         if (types == 0)
         {
             menuTable(x + 50, y - 1, 50, 2);
-            writeString(x + 54, y, L" VUI LÒNG CHỌN SẢN PHẨM TRƯỚC KHI THANH TOÁN ");
+            writeString(x + 54, y, L" VUI LÒNG CHỌN SẢN PHẨM TRƯỚC KHI THANH TOÁN ", 0x74);
         }
-        writeString(x, y, L"[ DANH SÁCH SẢN PHẨM ĐÃ CHỌN ]");
+        writeString(x, y, L"[ DANH SÁCH SẢN PHẨM ĐÃ CHỌN ]", 0x74);
         Ordertable(x, y + 4, 20);
         a = 5;
         for (int i = 0; i < types; i++)
@@ -214,10 +225,10 @@ void Order::confirm()
             a = a + 2;
         }
         menuTable(menuX, menuY, 110, 2); // Tăng chiều rộng menu cho phù hợp với 4 mục
-        writeString(menuX + 5, menuY + 1, selectedOption == 0 ? L"[ Xóa sản phẩm ]" : L"  Xóa sản phẩm");
-        writeString(menuX + 30, menuY + 1, selectedOption == 1 ? L"[ Sửa sản phẩm ]" : L"  Sửa sản phẩm");
-        writeString(menuX + 55, menuY + 1, selectedOption == 2 ? L"[ Thêm sản phẩm ]" : L"  Thêm sản phẩm");
-        writeString(menuX + 80, menuY + 1, selectedOption == 3 ? L"[ Tiếp tục thanh toán ]" : L"  Tiếp tục thanh toán");
+        writeString(menuX + 5, menuY + 1, selectedOption == 0 ? L"[ Xóa sản phẩm ]" : L"  Xóa sản phẩm", 0x71);
+        writeString(menuX + 30, menuY + 1, selectedOption == 1 ? L"[ Sửa sản phẩm ]" : L"  Sửa sản phẩm", 0x71);
+        writeString(menuX + 55, menuY + 1, selectedOption == 2 ? L"[ Thêm sản phẩm ]" : L"  Thêm sản phẩm", 0x71);
+        writeString(menuX + 80, menuY + 1, selectedOption == 3 ? L"[ Tiếp tục thanh toán ]" : L"  Tiếp tục thanh toán", 0x71);
         // Chờ nhận phím từ hàm batphim
         keyInput = batphim();
         // Di chuyển trong menu dựa trên phím mũi tên
@@ -241,8 +252,8 @@ void Order::confirm()
             if (selectedOption == 0)
             {
                 // Xử lý "Xóa sản phẩm"
-                writeString(x, y, L"[ Chọn sản phẩm cần xóa ]");
-                writeString(x, y, L"[ Chọn sản phẩm cần xóa ]");
+                writeString(x, y, L"[ Chọn sản phẩm cần xóa ]", 0x74);
+                writeString(x, y, L"[ Chọn sản phẩm cần xóa ]", 0x74);
                 menuTable(x + 25, y - 1, 20, 2);
                 Ordertable(x, y + 4, 20);
                 for (int i = 0; i < types; i++)
@@ -283,18 +294,18 @@ void Order::confirm()
                     }
                     else
                     {
-                        writeString(x, y + 2, L"Hủy bỏ thao tác xóa.");
+                        writeString(x, y + 2, L"Hủy bỏ thao tác xóa.", 0x70);
                     }
                 }
                 else
                 {
-                    writeString(x, y + 2, L"Mã sản phẩm không hợp lệ.");
+                    writeString(x, y + 2, L"Mã sản phẩm không hợp lệ.", 0x74);
                 }
             }
             else if (selectedOption == 1)
             {
                 // Xử lý "Sửa sản phẩm"
-                writeString(x, y, L"[ Chọn sản phẩm cần sửa ]");
+                writeString(x, y, L"[ Chọn sản phẩm cần sửa ]", 0x74);
                 menuTable(x + 25, y - 1, 15, 2);
                 Ordertable(x, y + 4, 20);
                 for (int i = 0; i < types; i++)
@@ -316,23 +327,39 @@ void Order::confirm()
                 if (selectedProduct >= 1 && selectedProduct <= types)
                 {
                     int newQuantity;
-                    writeString(x + 50, y, L"[ Nhập số lượng mới ]");
+                    writeString(x + 50, y, L"[ Nhập số lượng mới ]", 0x74);
                     menuTable(x + 80, y - 1, 15, 2);
-                    gotoXY(x + 83, y);
-                    cin >> newQuantity;
-                    if (newQuantity > 0 && newQuantity <= bookCode[selectedProduct - 1]->getSo_luong())
+                    while (true)
                     {
-                        bookCount[selectedProduct - 1] = newQuantity;
-                        writeString(x, y, L"Đã sửa số lượng sản phẩm thành công.");
-                    }
-                    else
-                    {
-                        writeString(x, y + 2, L"Số lượng không hợp lệ.");
+                        gotoXY(x + 83, y);
+                        cout << string(10, ' '); // Xóa nội dung cũ
+                        gotoXY(x + 83, y);
+
+                        try
+                        {
+                            string input = getNumericInput(); // Lấy dữ liệu đầu vào
+                            newQuantity = stoi(input);        // Chuyển đổi đầu vào thành số nguyên
+
+                            if (newQuantity > 0 && newQuantity <= bookCode[selectedProduct - 1]->getSo_luong())
+                            {
+                                bookCount[selectedProduct - 1] = newQuantity; // Cập nhật số lượng
+                                writeString(x, y, L"Đã sửa số lượng sản phẩm thành công.", 0x70);
+                                break; // Thoát khỏi vòng lặp nếu đầu vào hợp lệ
+                            }
+                            else
+                            {
+                                writeString(x, y + 2, L"Số lượng không hợp lệ hoặc vượt quá số lượng hiện có.", 0x70);
+                            }
+                        }
+                        catch (exception &e)
+                        {
+                            writeString(x, y + 2, L"[Đầu vào không hợp lệ. Vui lòng nhập số]", 0x74);
+                        }
                     }
                 }
                 else
                 {
-                    writeString(x, y + 2, L"Mã sản phẩm không hợp lệ.");
+                    writeString(x, y + 2, L"Mã sản phẩm không hợp lệ.", 0x70);
                 }
             }
             else if (selectedOption == 2)
@@ -356,22 +383,26 @@ void Order::confirm()
 }
 void Order::bill()
 {
+    SetConsoleBackgroundToGray();
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     int x = 20, y = 5;
     int a = 5;
     string billDay, cusCode, newNameCus, newCusAddress, newCusSdt, newCusCode;
     int day, month, year;
     int sum = 0;
     // Input
-    writeString(x + 6, y, L"[Nhập thông tin hóa đơn]");
+    writeString(x + 6, y, L"[Nhập thông tin hóa đơn]", 0x74);
     menuTable(x, y + 1, 45, 25);
     // Input for bill details
-    writeString(x + 6, y + 2, L"[ Nhập ngày lập hóa đơn ]");
+    writeString(x + 6, y + 2, L"[ Nhập ngày lập hóa đơn ]", 0x71);
     menuTable(x + 6, y + 3, 30, 2);
-    writeString(x + 6, y + 7, L"[ Nhập tên khách hàng ]");
+    writeString(x + 6, y + 7, L"[ Nhập tên khách hàng ]", 0x71);
     menuTable(x + 6, y + 8, 30, 2);
-    writeString(x + 6, y + 12, L"[ Nhập địa chỉ khách hàng ]");
+    writeString(x + 6, y + 12, L"[ Nhập địa chỉ khách hàng ]", 0x71);
     menuTable(x + 6, y + 13, 30, 2);
-    writeString(x + 6, y + 17, L"[ Nhập số điện thoại khách hàng ]");
+    writeString(x + 6, y + 17, L"[ Nhập số điện thoại khách hàng ]", 0x71);
     menuTable(x + 6, y + 18, 30, 2);
 
     // Validate bill day
@@ -468,7 +499,7 @@ void Order::bill()
 
         // Create and add a new customer
         Customer newCus(cusCode, newNameCus, newCusAddress, newCusSdt, sum);
-        Add_Customer(newCus);
+        this->Add_Customer(newCus);
         newCusCode = cusCode;
         std::ifstream infile("customers.txt");
         if (!infile)
@@ -508,17 +539,17 @@ void Order::bill()
         cus = cus->next;
     }
     newCusCode = cusCode;
-    writeString(x + 28, y, L"[ HÓA ĐƠN BÁN HÀNG ]");
-    writeString(x, y + 2, L"Tên khách hàng:");
+    writeString(x + 28, y, L"[ HÓA ĐƠN BÁN HÀNG ]", 0x74);
+    writeString(x, y + 2, L"Tên khách hàng:", 0x71);
     gotoXY(x + 20, y + 2);
     cout << newNameCus;
-    writeString(x + 40, y + 2, L"Ngày lập hóa đơn:");
+    writeString(x + 40, y + 2, L"Ngày lập hóa đơn:", 0x71);
     gotoXY(x + 60, y + 2);
     cout << billDay;
-    writeString(x, y + 4, L"Địa chỉ:");
+    writeString(x, y + 4, L"Địa chỉ:", 0x71);
     gotoXY(x + 20, y + 4);
     cout << newCusAddress;
-    writeString(x, y + 6, L"Số điện thoại:");
+    writeString(x, y + 6, L"Số điện thoại:", 0x71);
     gotoXY(x + 20, y + 6);
     cout << newCusSdt;
 
@@ -538,7 +569,7 @@ void Order::bill()
         cout << bookCode[i]->getGia_ban() * bookCount[i];
         a += 2;
     }
-    writeString(x + 80, y + 30, L"[ TỔNG TIỀN ]");
+    writeString(x + 80, y + 30, L"[ TỔNG TIỀN ]", 0x70);
     gotoXY(x + 96, y + 30);
     cout << Calculator();
     std::string maHoaDon, ngayLap, makhachhang;

@@ -1,16 +1,84 @@
 #include "HeThong.h"
 #include "condition.h"
 #include "menu.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <string.h>
+#include <windows.h>
 Menu::Menu()
 {
 }
 Menu::~Menu()
 {
 }
+
 void Menu::Start()
 {
-    this->readBook("books.txt"); // Load books
+    this->readBook("Books.txt");
     this->readCustomer("customers.txt");
+}
+
+void Menu::readBook(const string &fileName)
+{
+    ifstream infile(fileName);
+    if (!infile.is_open())
+    {
+        cout << "Could not open the file " << fileName << endl;
+        return;
+    }
+
+    int n; // Số lượng sách
+    infile >> n;
+    infile.ignore(); // Bỏ qua ký tự xuống dòng sau số lượng sách
+
+    BookNode *temp = nullptr;
+
+    for (int i = 0; i < n; ++i)
+    {
+        BookNode *newNode = new BookNode();
+        string maSach, tenSach, theLoai, tacGia;
+        int soLuong, giaBan, namXuatBan;
+
+        // Sử dụng getline để lấy từng thuộc tính
+        getline(infile, maSach, '|');
+        getline(infile, tenSach, '|');
+        getline(infile, theLoai, '|');
+        getline(infile, tacGia, '|');
+        infile >> soLuong;
+        infile.ignore(1, '|'); // Bỏ qua ký tự '|' sau so_luong
+        infile >> giaBan;
+        infile.ignore(1, '|'); // Bỏ qua ký tự '|' sau gia_ban
+        infile >> namXuatBan;
+        infile.ignore(); // Bỏ qua ký tự xuống dòng
+
+        // Gán giá trị cho dữ liệu của sách
+        newNode->data.SetMa_Sach(maSach);
+        newNode->data.SetTen_sach(tenSach);
+        newNode->data.SetThe_Loai(theLoai);
+        newNode->data.SetTac_Gia(tacGia);
+        newNode->data.SetSo_Luong(soLuong);
+        newNode->data.SetGia_Ban(giaBan);
+        newNode->data.SetNXB(namXuatBan);
+
+        newNode->next = nullptr;
+
+        if (bookHead == nullptr)
+        {
+            // Nếu danh sách rỗng, node mới trở thành đầu danh sách
+            bookHead = newNode;
+        }
+        else
+        {
+            // Liên kết node mới vào cuối danh sách
+            temp->next = newNode;
+        }
+
+        temp = newNode; // Cập nhật temp để trỏ đến node cuối
+    }
+
+    infile.close(); // Đóng file
 }
 int calculatePageCount(BookNode *book)
 {
@@ -52,6 +120,9 @@ int calculatePageCount(CustomerNode *Customer)
 }
 void outputCustomer(int x, int y, const Customer &customer)
 {
+
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(consoleHandle, 0x71); // 0x73 = nền xám + chữ xanh dương sáng
     gotoXY(x + 10, y + 1);
     cout << customer.getMaKH();
     gotoXY(x + 30, y + 1);
@@ -65,6 +136,8 @@ void outputCustomer(int x, int y, const Customer &customer)
 }
 void outputBook(int x, int y, const Book &book)
 {
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(consoleHandle, 0x71); // 0x73 = nền xám + chữ xanh dương sáng
     gotoXY(x + 5, y + 1);
     cout << book.getMa_Sach();
     gotoXY(x + 25, y + 1);
@@ -82,11 +155,13 @@ void outputBook(int x, int y, const Book &book)
 }
 void Menu::ShowAllBook()
 {
-
+    SetConsoleBackgroundToGray();
     BookNode *temp = this->bookHead;
     int sum = calculatePageCount(temp);     // Calculate total pages
     BookNode **first = new BookNode *[sum]; // Store first node of each page
-
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     for (int i = 0; i < sum; i++)
     {
         first[i] = nullptr;
@@ -94,10 +169,11 @@ void Menu::ShowAllBook()
 
     int a = 0, page = 1, tam = 0;
     system("cls");
+    // Thiết lập màu chữ đỏ trên nền xám
+    setcolor(4, 7);
     const wchar_t *name = L"[ THÔNG TIN SÁCH ]";
-    writeString(2, 2, name);
+    writeString(2, 2, name, 0x74);
     menuDisplay(2, 4, 23, page, sum); // Display header and page info
-
     while (tam == 0)
     {
         while (temp != NULL)
@@ -118,7 +194,7 @@ void Menu::ShowAllBook()
             if (key == 4 && temp != NULL)
             { // Next page
                 system("cls");
-                writeString(2, 2, name);
+                writeString(2, 2, name, 0x74);
                 page++;
                 menuDisplay(2, 4, 23, page, sum);
                 a = 0;
@@ -126,7 +202,7 @@ void Menu::ShowAllBook()
             else if (key == 3 && page > 1)
             { // Previous page
                 system("cls");
-                writeString(2, 2, name);
+                writeString(2, 2, name, 0x74);
                 page--;
                 menuDisplay(2, 4, 23, page, sum);
                 temp = first[page - 1];
@@ -160,7 +236,7 @@ void Menu::ShowAllBook()
                 else if (key == 3 && page == sum && page != 1)
                 { // Go to previous page from the last
                     system("cls");
-                    writeString(2, 2, name);
+                    writeString(2, 2, name, 0x74);
                     page--;
                     menuDisplay(2, 4, 23, page, sum);
                     temp = first[page - 1];
@@ -170,7 +246,7 @@ void Menu::ShowAllBook()
                 else if (key == 4 && page == 1 && page != sum)
                 { // Go to the second page
                     system("cls");
-                    writeString(2, 2, name);
+                    writeString(2, 2, name, 0x74);
                     page++;
                     menuDisplay(2, 4, 23, page, sum);
                     if (first[1] == nullptr)
@@ -267,10 +343,14 @@ void DeleteList(BookNode *head)
 }
 void Menu::ShowSortedBooks(int i, BookNode *b)
 {
+
+    SetConsoleBackgroundToGray();
     BookNode *temp = b;
     int sum = calculatePageCount(temp);     // Tổng số trang
     BookNode **first = new BookNode *[sum]; // Lưu node đầu mỗi trang
-
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     for (int j = 0; j < sum; j++)
     {
         first[j] = nullptr;
@@ -306,7 +386,7 @@ void Menu::ShowSortedBooks(int i, BookNode *b)
         break;
     }
 
-    writeString(2, 2, name);          // Hiển thị tiêu đề
+    writeString(2, 2, name, 0x74);    // Hiển thị tiêu đề
     menuDisplay(2, 4, 23, page, sum); // Hiển thị trang đầu
 
     while (exitFlag == 0)
@@ -329,7 +409,7 @@ void Menu::ShowSortedBooks(int i, BookNode *b)
             if (key == 4 && temp != NULL)
             { // Qua trang sau
                 system("cls");
-                writeString(2, 2, name);
+                writeString(2, 2, name, 0x74);
                 page++;
                 menuDisplay(2, 4, 23, page, sum);
                 a = 0;
@@ -337,7 +417,7 @@ void Menu::ShowSortedBooks(int i, BookNode *b)
             else if (key == 3 && page > 1)
             { // Qua trang trước
                 system("cls");
-                writeString(2, 2, name);
+                writeString(2, 2, name, 0x74);
                 page--;
                 menuDisplay(2, 4, 23, page, sum);
                 temp = first[page - 1];
@@ -370,7 +450,7 @@ void Menu::ShowSortedBooks(int i, BookNode *b)
                 else if (key == 3 && page == sum && page != 1)
                 { // Quay lại trang trước từ trang cuối
                     system("cls");
-                    writeString(2, 2, name);
+                    writeString(2, 2, name, 0x74);
                     page--;
                     menuDisplay(2, 4, 23, page, sum);
                     temp = first[page - 1];
@@ -380,7 +460,7 @@ void Menu::ShowSortedBooks(int i, BookNode *b)
                 else if (key == 4 && page == 1 && page != sum)
                 { // Đi tới trang tiếp theo từ trang đầu
                     system("cls");
-                    writeString(2, 2, name);
+                    writeString(2, 2, name, 0x74);
                     page++;
                     menuDisplay(2, 4, 23, page, sum);
                     temp = first[1];
@@ -443,63 +523,69 @@ void Menu::Sort_BookUporDown(int i, int t)
 
 void Menu::ShowAllCus()
 {
-
+    this->customerHead = nullptr;
+    this->readCustomer("customers.txt");
+    SetConsoleBackgroundToGray();
     CustomerNode *temp = this->customerHead;
-    int sum = calculatePageCount(temp);             // Tính tổng số trang
-    CustomerNode **first = new CustomerNode *[sum]; // Lưu node đầu trang
+    int sum = calculatePageCount(temp);             // Calculate total pages
+    CustomerNode **first = new CustomerNode *[sum]; // Store first node of each page
+    for (int i = 0; i < sum; i++)
+    {
+        first[i] = nullptr;
+    }
+
     int a = 0, page = 1, tam = 0;
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Set white text on gray background
+    SetConsoleTextAttribute(consoleHandle, 0x70);
 
     const wchar_t *name = L"[ THÔNG TIN KHÁCH HÀNG ]";
     system("cls");
-    writeString(2, 2, name);
-    menuDisplay2(2, 4, 23, page, sum); // In tiêu đề trang sách
+    writeString(2, 2, name, 0x74);
+    menuDisplay2(2, 4, 23, page, sum); // Display header and page info
+
     while (tam == 0)
     {
         while (temp != NULL)
         {
-            for (int i = 1; i <= 10; i++)
-            {
-                if (temp != NULL)
+            for (int i = 0; i < 10 && temp != NULL; i++)
+            { // Display 10 items per page
+                a += 2;
+                outputCustomer(2, a + 4, temp->data); // Output customer info
+                if (a == 2)
                 {
-                    a += 2;
-                    outputCustomer(2, a + 4, temp->data); // Xuất thông tin khách hàng
-                    if (a == 2)
-                    {
-                        first[page] = temp; // Lưu node đầu trang
-                    }
-                    temp = temp->next;
+                    first[page - 1] = temp; // Store first node of the current page
                 }
+                temp = temp->next;
             }
 
-            if (setKeyBoard() == 4 && temp != NULL) // Ấn qua phải
+            // Handle key events
+            int key = setKeyBoard();
+            if (key == 4 && temp != NULL) // Next page
             {
                 system("cls");
-                writeString(2, 2, name);
+                writeString(2, 2, name, 0x74);
                 page++;
-                menuTable(2, 4, 30, 2);
+                menuDisplay2(2, 4, 23, page, sum);
                 a = 0;
             }
-            else if (setKeyBoard() == 3 && page > 1) // Ấn qua trái
+            else if (key == 3 && page > 1) // Previous page
             {
                 system("cls");
-                writeString(2, 2, name);
+                writeString(2, 2, name, 0x74);
                 page--;
-                menuTable(2, 4, 30, 2);
-                temp = first[page];
+                menuDisplay2(2, 4, 23, page, sum);
+                temp = first[page - 1];
                 a = 0;
             }
-            else if (setKeyBoard() == 4 && temp == NULL) // Ấn qua phải ở trang cuối
-            {
-                break;
-            }
-            else if (setKeyBoard() == 3 && page - 1 <= 0) // Ấn qua trái ở trang đầu
-            {
-                break;
-            }
-            else if (setKeyBoard() == 5) // Thoát
+            else if (key == 5) // Exit
             {
                 system("cls");
                 tam = 1;
+                break;
+            }
+            else if ((key == 4 && temp == NULL) || (key == 3 && page == 1))
+            { // Invalid navigation
                 break;
             }
         }
@@ -509,61 +595,45 @@ void Menu::ShowAllCus()
             int thu = 0;
             while (true)
             {
-                if (setKeyBoard() == 5) // Thoát
+                int key = setKeyBoard();
+                if (key == 5) // Exit
                 {
                     system("cls");
                     tam = 1;
                     break;
                 }
-                else if (setKeyBoard() == 3 && page == sum && page > 1) // Quay về trang trước
+                else if (key == 3 && page == sum && page > 1) // Go to previous page
                 {
                     system("cls");
-                    writeString(2, 2, name);
-                    menuTable(2, 4, 30, 2);
+                    writeString(2, 2, name, 0x74);
                     page--;
-                    temp = first[page];
+                    menuDisplay2(2, 4, 23, page, sum);
+                    temp = first[page - 1];
                     a = 0;
                     break;
                 }
-                else if (setKeyBoard() == 4 && page == 1 && page != sum) // Đi tới trang tiếp theo
+                else if (key == 4 && page == 1 && page != sum) // Go to next page
                 {
-                    while (true)
-                    {
-                        if (setKeyBoard() == 4)
-                        {
-                            system("cls");
-                            writeString(2, 2, name);
-                            menuTable(2, 4, 30, 2);
-                            page = 2;
-                            if (first[2] == nullptr)
-                            {
-                                thu = 1;
-                            }
-                            else
-                                temp = first[2];
-                            a = 0;
-                            break;
-                        }
-                        else if (setKeyBoard() == 5) // Thoát
-                        {
-                            system("cls");
-                            tam = 1;
-                            break;
-                        }
-                    }
+                    system("cls");
+                    writeString(2, 2, name, 0x74);
+                    page++;
+                    menuDisplay2(2, 4, 23, page, sum);
+                    if (first[1] == nullptr)
+                        thu = 1;
+                    else
+                        temp = first[1];
+                    a = 0;
+                    break;
                 }
-                break;
             }
             if (thu == 1)
-            {
                 continue;
-            }
         }
     }
 
-    // Dọn dẹp bộ nhớ
-    delete[] first;
+    delete[] first; // Clean up allocated memory
 }
+
 BookNode *Menu::filterBooks(string str, int i)
 {
     BookNode *newBook = nullptr; // Head of the new list
@@ -635,7 +705,10 @@ void Menu::search_book(int x)
     string search;
     BookNode *temp = nullptr;
     // const wchar_t* name = L"[ THÔNG TIN SÁCH ]";
-
+    SetConsoleBackgroundToGray();
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     const wchar_t *name;
     if (x == 1)
         name = L"[ Nhập tên sách ]";
@@ -650,7 +723,7 @@ void Menu::search_book(int x)
         while (true)
         {
             system("cls");
-            writeString(2, 2, name);
+            writeString(2, 2, name, 0x74);
             menuTable(2, 3, 30, 2);
             gotoXY(4, 4);
             search = getinput();
@@ -660,8 +733,8 @@ void Menu::search_book(int x)
             // Nếu không tìm thấy sách phù hợp
             if (temp == nullptr)
             {
-                writeString(4, 7, L"[ Không tìm thấy sách phù hợp ]");
-                writeString(4, 8, L"[ Nhấn Enter để tìm lại hoặc ESC để thoát ]");
+                writeString(4, 7, L"[ Không tìm thấy sách phù hợp ]", 0x74);
+                writeString(4, 8, L"[ Nhấn Enter để tìm lại hoặc ESC để thoát ]", 0x74);
                 int tam = getch();
 
                 if (tam == 5)
@@ -685,7 +758,7 @@ void Menu::search_book(int x)
         while (true)
         {
             system("cls");
-            writeString(2, 2, name);
+            writeString(2, 2, name, 0x74);
             menuTable(2, 3, 30, 2);
             gotoXY(4, 4);
             search = getinput();
@@ -696,8 +769,8 @@ void Menu::search_book(int x)
             // Nếu không tìm thấy sách phù hợp
             if (temp == nullptr)
             {
-                writeString(4, 7, L"[ Không tìm thấy sách phù hợp ]");
-                writeString(4, 8, L"[ Nhấn Enter để tìm lại hoặc ESC để thoát ]");
+                writeString(4, 7, L"[ Không tìm thấy sách phù hợp ]", 0x74);
+                writeString(4, 8, L"[ Nhấn Enter để tìm lại hoặc ESC để thoát ]", 0x74);
                 int tam = getch();
 
                 if (tam == 5)
@@ -721,7 +794,7 @@ void Menu::search_book(int x)
         while (true)
         {
             system("cls");
-            writeString(2, 2, name);
+            writeString(2, 2, name, 0x74);
             menuTable(2, 3, 30, 2);
             gotoXY(4, 4);
             search = getinput();
@@ -732,8 +805,8 @@ void Menu::search_book(int x)
             // Nếu không tìm thấy sách phù hợp
             if (temp == nullptr)
             {
-                writeString(4, 7, L"[ Không tìm thấy sách phù hợp ]");
-                writeString(4, 8, L"[ Nhấn Enter để tìm lại hoặc ESC để thoát ]");
+                writeString(4, 7, L"[ Không tìm thấy sách phù hợp ]", 0x74);
+                writeString(4, 8, L"[ Nhấn Enter để tìm lại hoặc ESC để thoát ]", 0x74);
                 int tam = getch();
 
                 if (tam == 5)
@@ -757,7 +830,7 @@ void Menu::search_book(int x)
         while (true)
         {
             system("cls");
-            writeString(2, 2, name);
+            writeString(2, 2, name, 0x74);
             menuTable(2, 3, 30, 2);
             gotoXY(4, 4);
             search = getinput();
@@ -768,8 +841,8 @@ void Menu::search_book(int x)
             // Nếu không tìm thấy sách phù hợp
             if (temp == nullptr)
             {
-                writeString(4, 7, L"[ Không tìm thấy sách phù hợp ]");
-                writeString(4, 8, L"[ Nhấn Enter để tìm lại hoặc ESC để thoát ]");
+                writeString(4, 7, L"[ Không tìm thấy sách phù hợp ]", 0x74);
+                writeString(4, 8, L"[ Nhấn Enter để tìm lại hoặc ESC để thoát ]", 0x74);
                 int tam = getch();
 
                 if (tam == 5)
@@ -810,7 +883,7 @@ void Menu::search_book(int x)
             while (true)
             {
                 system("cls"); // Xóa màn hình trước khi hiển thị lại dữ liệu mới
-                writeString(2, 2, name);
+                writeString(2, 2, name, 0x74);
                 menuTable(2, 3, 30, 2);
                 gotoXY(4, 4);
                 cout << search;
@@ -826,7 +899,7 @@ void Menu::search_book(int x)
                 }
 
                 // Hiển thị các sách trong trang hiện tại
-                writeString(2, 7, L"[ THÔNG TIN SẢN PHẨM ]");
+                writeString(2, 7, L"[ THÔNG TIN SẢN PHẨM ]", 0x74);
                 bangsanpham(2, 8, itemsPerPage + 5);
 
                 int a = 8;
@@ -838,13 +911,13 @@ void Menu::search_book(int x)
                 }
 
                 // Hiển thị điều hướng nếu có nhiều hơn 1 trang
-                writeString(2, 2, name);
+                writeString(2, 2, name, 0x74);
                 menuTable(2, 3, 30, 2);
                 gotoXY(4, 4);
                 cout << search;
                 gotoXY(100, 6);
                 cout << "Trang " << currentPage + 1 << " / " << totalPages;
-                writeString(2, 25, L"Nhấn nút [->] để tới trang tiếp theo, [<-] để quay về trang trước!!");
+                writeString(2, 25, L"Nhấn nút [->] để tới trang tiếp theo, [<-] để quay về trang trước!!", 0x74);
                 // Nhận phím từ người dùng
                 tam = setKeyBoard();
 
@@ -868,7 +941,7 @@ void Menu::search_book(int x)
         {
             // Nếu danh sách <= 5, hiển thị bình thường
             current = temp;
-            writeString(2, 7, L"[ THÔNG TIN SẢN PHẨM ]");
+            writeString(2, 7, L"[ THÔNG TIN SẢN PHẨM ]", 0x74);
             bangsanpham(2, 8, length + 5);
 
             int a = 8;
@@ -964,14 +1037,18 @@ void WriteBookToFile(const string &bookID, const string &bookName, const string 
 }
 bool Menu::CreateBook()
 {
+    SetConsoleBackgroundToGray();
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     ShowCursor(TRUE);
     int x = 2, y = 2;
     string bookID, bookName, bookGenre, bookAuthor, publicationYear, quantity, price;
     int gia_ban, so_luong, year;
     menuTable(x + 18, y + 28, 50, 2);
-    writeString(x + 20, y + 29, L"[ENTER]  CONTINUE");
-    writeString(x + 40, y + 29, L"[ESC]  SAVE & EXIT");
-    writeString(x, y, L"[ THÊM SẢN PHẨM ]");
+    writeString(x + 20, y + 29, L"[ENTER]  CONTINUE", 0x74);
+    writeString(x + 40, y + 29, L"[ESC]  SAVE & EXIT", 0x74);
+    writeString(x, y, L"[ THÊM SẢN PHẨM ]", 0x74);
     bangsanpham(x, y + 1, 20);
     if (this->bookHead != nullptr)
     {
@@ -1004,7 +1081,7 @@ bool Menu::CreateBook()
         cout << bookID;
         while (true)
         {
-            writeString(37, 2, L"[ Tên sách phải dài ít nhất 4 ký tự! ]");
+            writeString(37, 2, L"[ Tên sách phải dài ít nhất 4 ký tự! ]", 0x74);
             gotoXY(x + 25, y + 4);
             getline(cin, bookName); // Dùng getline để nhập tên sách, có thể chứa khoảng trắng
             if (bookName.length() >= 4 && isAlphaString(bookName))
@@ -1019,7 +1096,7 @@ bool Menu::CreateBook()
 
         while (true)
         {
-            writeString(37, 2, L"[ Thể loại phải dài ít nhất 3 ký tự! ]");
+            writeString(37, 2, L"[ Thể loại phải dài ít nhất 3 ký tự! ]", 0x74);
             gotoXY(x + 60, y + 4);
             getline(cin, bookGenre); // Dùng getline để nhập thể loại
             if (bookGenre.length() >= 3 && isAlphaString(bookGenre))
@@ -1034,7 +1111,7 @@ bool Menu::CreateBook()
 
         while (true)
         {
-            writeString(37, 2, L"Tên tác giả phải dài ít nhất 4 ký tự!");
+            writeString(37, 2, L"Tên tác giả phải dài ít nhất 4 ký tự!", 0x74);
             gotoXY(x + 85, y + 4);
             getline(cin, bookAuthor); // Dùng getline để nhập tên tác giả
             if (bookAuthor.length() >= 4 && isAlphaString(bookAuthor))
@@ -1049,7 +1126,7 @@ bool Menu::CreateBook()
         while (true)
         {
             string nam_xuat_ban;
-            writeString(37, 2, L"  Năm xuất bản phải có 4 kí tự!      ");
+            writeString(37, 2, L"  Năm xuất bản phải có 4 kí tự!      ", 0x74);
             gotoXY(x + 104, y + 4);
             nam_xuat_ban = getinput();
             if (isValidYear(nam_xuat_ban))
@@ -1063,7 +1140,7 @@ bool Menu::CreateBook()
                 }
                 catch (const std::exception &e)
                 {
-                    writeString(37, 2, L"  Năm xuất bản phải có 4 kí tự!      ");
+                    writeString(37, 2, L"  Năm xuất bản phải có 4 kí tự!      ", 0x74);
                 }
             }
             else
@@ -1074,7 +1151,7 @@ bool Menu::CreateBook()
         while (true)
         {
             string quantity;
-            writeString(37, 2, L"  Số lượng phải nhỏ hơn 999!         ");
+            writeString(37, 2, L"  Số lượng phải nhỏ hơn 999!         ", 0x74);
 
             gotoXY(x + 125, y + 4);
             quantity = getinput();
@@ -1089,7 +1166,7 @@ bool Menu::CreateBook()
                 }
                 catch (const std::exception &e)
                 {
-                    writeString(50, y + 7, L"Lỗi: Giá trị số lượng không hợp lệ.");
+                    writeString(50, y + 7, L"Lỗi: Giá trị số lượng không hợp lệ.", 0x74);
                 }
             }
             else
@@ -1101,7 +1178,7 @@ bool Menu::CreateBook()
         while (true)
         {
             string price;
-            writeString(37, 2, L"  Giá sách phải lớn hơn 1000!         ");
+            writeString(37, 2, L"  Giá sách phải lớn hơn 1000!         ", 0x74);
             gotoXY(x + 136, y + 4);
             price = getinput();
             if (isValidPrice(price))
@@ -1115,7 +1192,7 @@ bool Menu::CreateBook()
                 }
                 catch (const std::exception &e)
                 {
-                    writeString(50, y + 7, L"Lỗi: Giá trị giá sách không hợp lệ.");
+                    writeString(50, y + 7, L"Lỗi: Giá trị giá sách không hợp lệ.", 0x74);
                 }
             }
             else
@@ -1146,20 +1223,34 @@ bool Menu::CreateBook()
 }
 bool Menu::UpdateBook()
 {
-    int position;
+    SetConsoleBackgroundToGray();
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
+    int position, xc, yc;
     while (true)
     {
-        const wchar_t *name = L"[ Nhập Mã sách ]";
-        writeString(10, 2, name);
+        menuTable(2 + 120, 2 - 1, 25, 2);
+        writeString(125, 2, L"Xem thông tin sách", 0x74);
+        const wchar_t *name = L"[ Nhập Mã sách cần sửa]";
+        writeString(4, 2, name, 0x74);
+        menuTable(27, 1, 30, 2);
+        setClick(xc, yc);
+        if (122 <= xc && xc <= 148 && 0 <= yc && yc <= 3)
+        {
+            this->ShowAllBook();
+        }
+        menuTable(2 + 120, 2 - 1, 25, 2);
+        writeString(125, 2, L"Xem thông tin sách", 0x74);
+        writeString(4, 2, name, 0x74);
         menuTable(27, 1, 30, 2);
         gotoXY(28, 2);
-
         string searchmasach = getinput();
         position = find_Node_Book(searchmasach); // Tìm vị trí sách bằng cách tìm mã sách
 
         if (position == -1)
         {
-            writeString(27, 4, L"Không tồn tại sách có mã như trên.");
+            writeString(27, 4, L"Không tồn tại sách có mã như trên.", 0x74);
             gotoXY(28, 2);
             cout << string(10, ' ');
         }
@@ -1174,7 +1265,7 @@ bool Menu::UpdateBook()
     // Hiển thị bảng sản phẩm để cập nhật
     bangsanpham(3, 8, 2);
     int x = 4, y = 10;
-    writeString(x + 1, y - 4, L"[ THÔNG TIN SẢN PHẨM ]");
+    writeString(x + 1, y - 4, L"[ THÔNG TIN SẢN PHẨM ]", 0x74);
 
     // Hiển thị thông tin hiện tại của sách
     gotoXY(x + 10, y + 1);
@@ -1193,7 +1284,7 @@ bool Menu::UpdateBook()
     cout << update->getGia_ban();
     delete_Node_Book(*update);
     // Bảng sửa sản phẩm
-    writeString(x + 1, y + 6, L"[ SỬA SẢN PHẨM ]");
+    writeString(x + 1, y + 6, L"[ SỬA SẢN PHẨM ]", 0x74);
     bangsanpham(3, 18, 2);
     // Vòng lặp chỉnh sửa trực tiếp
     int x_click, y_click;
@@ -1209,8 +1300,9 @@ bool Menu::UpdateBook()
             // Sửa Tên Sách
             while (true)
             {
-                writeString(50, y + 6, L" Tên sách phải dài ít nhất 4 ký tự! ");
                 menuTable(49, y + 5, 40, 2);
+                writeString(50, y + 6, L" Tên sách phải dài ít nhất 4 ký tự! ", 0x74);
+
                 gotoXY(x + 30, y + 12);
                 new_TenSach = getinput(); // Dùng getline để nhập tên sách, có thể chứa khoảng trắng
                 if (new_TenSach.length() >= 4 && isAlphaString(new_TenSach))
@@ -1219,6 +1311,8 @@ bool Menu::UpdateBook()
                 }
                 else
                 {
+                    gotoXY(x + 30, y + 12);
+                    cout << string(15, ' '); // Xóa nội dung cũ
                     trolaisua(x + 30, y + 12, new_TenSach);
                 }
             }
@@ -1231,8 +1325,9 @@ bool Menu::UpdateBook()
             // Sửa Thể Loại
             while (true)
             {
-                writeString(50, y + 6, L"[ Thể loại phải dài ít nhất 3 ký tự! ]");
                 menuTable(49, y + 5, 40, 2);
+                writeString(50, y + 6, L"[ Thể loại phải dài ít nhất 3 ký tự! ]", 0x74);
+
                 gotoXY(x + 60, y + 12);
                 new_TheLoai = getinput(); // Dùng getline để nhập thể loại
                 if (new_TheLoai.length() >= 3 && isAlphaString(new_TheLoai))
@@ -1241,6 +1336,8 @@ bool Menu::UpdateBook()
                 }
                 else
                 {
+                    gotoXY(x + 60, y + 4);
+                    cout << string(15, ' '); // Xóa nội dung cũ
                     trolaisua(x + 60, y + 4, new_TheLoai);
                 }
             }
@@ -1253,8 +1350,9 @@ bool Menu::UpdateBook()
             // Sửa Tác Giả
             while (true)
             {
-                writeString(50, y + 6, L"Tên tác giả phải dài ít nhất 4 ký tự!");
                 menuTable(49, y + 5, 40, 2);
+                writeString(50, y + 6, L"Tên tác giả phải dài ít nhất 4 ký tự!", 0x74);
+
                 gotoXY(x + 85, y + 12);
                 new_TacGia = getinput(); // Dùng getline để nhập tên tác giả
                 if (new_TacGia.length() >= 4 && isAlphaString(new_TacGia))
@@ -1263,6 +1361,8 @@ bool Menu::UpdateBook()
                 }
                 else
                 {
+                    gotoXY(x + 85, y + 12);
+                    cout << string(15, ' '); // Xóa nội dung cũ
                     trolaisua(x + 85, y + 12, new_TacGia);
                 }
             }
@@ -1277,8 +1377,9 @@ bool Menu::UpdateBook()
             while (true)
             {
 
-                writeString(50, y + 6, L"  Năm xuất bản phải có 4 kí tự!      ");
                 menuTable(49, y + 5, 40, 2);
+                writeString(50, y + 6, L"  Năm xuất bản phải có 4 kí tự!      ", 0x74);
+
                 gotoXY(x + 104, y + 12);
                 nam_xuat_ban = getinput(); // Dùng getline để nhập năm xuất bản
                 if (isValidYear(nam_xuat_ban))
@@ -1287,6 +1388,8 @@ bool Menu::UpdateBook()
                 }
                 else
                 {
+                    gotoXY(x + 104, y + 4);
+                    cout << string(15, ' '); // Xóa nội dung cũ
                     trolaisua(x + 104, y + 4, nam_xuat_ban);
                 }
             }
@@ -1303,8 +1406,9 @@ bool Menu::UpdateBook()
             while (true)
             {
 
-                writeString(50, y + 6, L"  Số lượng phải nhỏ hơn 999!         ");
                 menuTable(49, y + 5, 40, 2);
+                writeString(50, y + 6, L"  Số lượng phải nhỏ hơn 999!         ", 0x74);
+
                 gotoXY(x + 125, y + 12);
                 quantity = getinput(); // Dùng getline để nhập số lượng
                 if (isValidQuantity(quantity))
@@ -1313,6 +1417,8 @@ bool Menu::UpdateBook()
                 }
                 else
                 {
+                    gotoXY(x + 125, y + 12);
+                    cout << string(15, ' '); // Xóa nội dung cũ
                     trolaisua(x + 125, y + 12, quantity);
                 }
             }
@@ -1329,8 +1435,9 @@ bool Menu::UpdateBook()
             while (true)
             {
 
-                writeString(50, y + 6, L"  Giá sách phải lớn hơn 1000!        ");
                 menuTable(49, y + 5, 40, 2);
+                writeString(50, y + 6, L"  Giá sách phải lớn hơn 1000!        ", 0x74);
+
                 gotoXY(x + 136, y + 12);
                 price = getinput(); // Dùng getline để nhập giá sách
                 if (isValidPrice(price))
@@ -1339,6 +1446,8 @@ bool Menu::UpdateBook()
                 }
                 else
                 {
+                    gotoXY(x + 136, y + 12);
+                    cout << string(15, ' '); // Xóa nội dung cũ
                     trolaisua(x + 136, y + 12, price);
                 }
             }
@@ -1358,7 +1467,7 @@ bool Menu::UpdateBook()
     Insert_NodeMiddle(*update, position - 1);
     return true;
 }
-void DeleteBookFromFile(const std::string &bookID)
+void Menu::DeleteBookFromFile(const std::string &bookID)
 {
     // Mở file để đọc
     std::ifstream inFile("books.txt");
@@ -1368,10 +1477,12 @@ void DeleteBookFromFile(const std::string &bookID)
         return;
     }
 
-    std::ostringstream tempBuffer;
     std::string line;
     bool bookFound = false;
     int totalBooks = 0;
+    int maxBooks = 1000;        // Giả định số sách tối đa trong file
+    std::string bookData[1000]; // Mảng tạm để lưu dữ liệu sách
+    int bookIndex = 0;
 
     // Đọc dòng đầu tiên để lấy tổng số sách hiện tại
     if (std::getline(inFile, line))
@@ -1413,8 +1524,8 @@ void DeleteBookFromFile(const std::string &bookID)
         }
         else
         {
-            // Ghi lại dòng cũ vào bộ đệm tạm
-            tempBuffer << line << "\n";
+            // Lưu lại dòng vào mảng
+            bookData[bookIndex++] = line;
         }
     }
 
@@ -1427,6 +1538,56 @@ void DeleteBookFromFile(const std::string &bookID)
         return;
     }
 
+    // Sắp xếp lại các mã sách theo thứ tự tăng dần
+    for (int i = 0; i < bookIndex - 1; ++i)
+    {
+        for (int j = i + 1; j < bookIndex; ++j)
+        {
+            std::string id1 = bookData[i].substr(0, bookData[i].find('|'));
+            std::string id2 = bookData[j].substr(0, bookData[j].find('|'));
+            if (id1 > id2)
+            {
+                std::swap(bookData[i], bookData[j]); // Hoán đổi nếu không đúng thứ tự
+            }
+        }
+    }
+
+    // Cập nhật lại danh sách liên kết (BookHead)
+    BookNode *current = this->bookHead;
+    for (int i = 0; i < bookIndex; ++i)
+    {
+        if (current == nullptr)
+            break;
+
+        std::istringstream lineStream(bookData[i]);
+        std::string id, name, genre, author;
+        int existingQuantity, existingPrice, year;
+
+        std::getline(lineStream, id, '|');
+        std::getline(lineStream, name, '|');
+        std::getline(lineStream, genre, '|');
+        std::getline(lineStream, author, '|');
+        lineStream >> year;
+        lineStream.ignore(1, '|');
+        lineStream >> existingQuantity;
+        lineStream.ignore(1, '|');
+        lineStream >> existingPrice;
+
+        // Cập nhật mã sách mới và các thuộc tính khác
+        std::ostringstream newID;
+        newID << "B" << std::setw(3) << std::setfill('0') << (i + 1);
+
+        current->data.SetMa_Sach(newID.str());
+        current->data.SetTen_sach(name);
+        current->data.SetThe_Loai(genre);
+        current->data.SetTac_Gia(author);
+        current->data.SetNXB(year);
+        current->data.SetSo_Luong(existingQuantity);
+        current->data.SetGia_Ban(existingPrice);
+
+        current = current->next; // Di chuyển đến node tiếp theo
+    }
+
     // Ghi lại nội dung mới vào file, bao gồm dòng tổng số sách ở đầu
     std::ofstream outFile("books.txt");
     if (!outFile.is_open())
@@ -1435,25 +1596,61 @@ void DeleteBookFromFile(const std::string &bookID)
         return;
     }
     outFile << totalBooks << "\n"; // Ghi lại tổng số sách ở dòng đầu tiên
-    outFile << tempBuffer.str();   // Ghi lại nội dung của các sách còn lại
+
+    // Ghi các sách đã cập nhật vào file
+    current = bookHead;
+    while (current != nullptr)
+    {
+        outFile << current->data.getMa_Sach() << "|" << current->data.getTen_sach() << "|"
+                << current->data.getThe_loai() << "|" << current->data.getTac_gia() << "|"
+                << current->data.getNam_xuat_ban() << "|" << current->data.getSo_luong() << "|"
+                << current->data.getGia_ban() << "\n";
+        current = current->next;
+    }
+
     outFile.close();
 }
+
 bool Menu::DeleteBook()
 {
+    SetConsoleBackgroundToGray();
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     int position;
+    int xc, yc;
+    const wchar_t *name = L"[ Nhập Mã sách cần xóa]";
+    writeString(4, 2, name, 0x74);
+    menuTable(27, 1, 30, 2);
+    menuTable(2 + 120, 2 - 1, 25, 2);
+    writeString(125, 2, L"Xem thông tin sách", 0x74);
+    setClick(xc, yc);
+    if (122 <= xc && xc <= 148 && 0 <= yc && yc <= 3)
+    {
+        this->ShowAllBook();
+    }
     while (true)
     {
-        const wchar_t *name = L"[ Nhập Mã sách ]";
-        writeString(10, 2, name);
+        menuTable(2 + 120, 2 - 1, 25, 2);
+        writeString(125, 2, L"Xem thông tin sách", 0x74);
+        writeString(4, 2, name, 0x74);
+        menuTable(27, 1, 30, 2);
+        setClick(xc, yc);
+        if (122 <= xc && xc <= 148 && 0 <= yc && yc <= 3)
+        {
+            this->ShowAllBook();
+        }
+        menuTable(2 + 120, 2 - 1, 25, 2);
+        writeString(125, 2, L"Xem thông tin sách", 0x74);
+        writeString(4, 2, name, 0x74);
         menuTable(27, 1, 30, 2);
         gotoXY(28, 2);
-
         string searchmasach = getinput();
         position = find_Node_Book(searchmasach); // Tìm vị trí sách bằng cách tìm mã sách
 
         if (position == -1)
         {
-            writeString(27, 4, L"Không tồn tại sách có mã như trên.");
+            writeString(27, 4, L"Không tồn tại sách có mã như trên.", 0x74);
             gotoXY(28, 2);
             cout << string(10, ' ');
         }
@@ -1467,7 +1664,7 @@ bool Menu::DeleteBook()
     // Hiển thị thông tin sách cần xóa
     bangsanpham(3, 8, 2);
     int x = 4, y = 10;
-    writeString(x + 1, y - 4, L"[ THÔNG TIN SẢN PHẨM ]");
+    writeString(x + 1, y - 4, L"[ THÔNG TIN SẢN PHẨM ]", 0x74);
     gotoXY(x + 10, y + 1);
     cout << DeleteBook->getMa_Sach();
     gotoXY(x + 30, y + 1);
@@ -1491,12 +1688,15 @@ bool Menu::DeleteBook()
     }
     else
     {
-        writeString(30, 22, L"Hủy bỏ việc xóa sách.");
+        writeString(30, 22, L"Hủy bỏ việc xóa sách.", 0x74);
         return false;
     }
 }
 void outputInvoice(int x, int y, string maHoaDon, string makhachhang, string ngayLap, int soLuong, int tongTien)
 {
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     gotoXY(x + 5, y + 1); // Position for Mã HĐ
     cout << maHoaDon;
     gotoXY(x + 25, y + 1); // Position for Mã KH
@@ -1511,13 +1711,13 @@ void outputInvoice(int x, int y, string maHoaDon, string makhachhang, string nga
 void displayInvoice(int n, string maHoaDonArr[], string makhachhangArr[], string ngayLapArr[], int soLuongArr[], int tongTienArr[])
 {
     int page = 1;
-    int totalPages = (n + 4) / 5; // Tổng số trang, mỗi trang 10 hóa đơn
+    int totalPages = (n + 9) / 10; // Tổng số trang, mỗi trang 10 hóa đơn
     int tam = 0;
     while (tam == 0)
     {
         system("cls");
         const wchar_t *title = L"[ THÔNG TIN HÓA ĐƠN ]";
-        writeString(2, 2, title);
+        writeString(2, 2, title, 0x74);
         Bill_Table(2, 4, 23, page, totalPages);
         // In hóa đơn trên trang hiện tại
         int start = (page - 1) * 10;
@@ -1549,15 +1749,41 @@ void displayInvoice(int n, string maHoaDonArr[], string makhachhangArr[], string
 }
 void Menu::statistical()
 {
+    SetConsoleBackgroundToGray();
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(consoleHandle, 0x70); // Set text color to white on gray background
 
     int x = 30, y = 5;
-    int thang, nam;
     int sum_products = 0;
     int sum_capital = 0;
     int num_customers = 0;
     int total_revenue = 0;
     int count_books = 0;
-    // Initial statistics
+    int total_invoices = 0; // Total number of invoices
+    int sum_productsdetail, sum_capitaldetail , count_invoices_detail;
+    int count;
+    string maHoaDonArr[1000], makhachhangArr[1000], ngayLapArr[1000];
+    int soLuongArr[1000], tongTienArr[1000];
+
+    // Read total invoices from bill.txt file
+    ifstream infile("bill.txt");
+    if (infile)
+    {
+        if (!(infile >> total_invoices))
+        {
+            cout << "Error reading the number of invoices from bill.txt!" << endl;
+            infile.close();
+            return;
+        }
+        infile.close();
+    }
+    else
+    {
+        cout << "Cannot open bill.txt to read the number of invoices!" << endl;
+        return;
+    }
+
+    // Initial statistics for books and customers
     BookNode *tempBook = this->bookHead;
     while (tempBook != nullptr)
     {
@@ -1567,7 +1793,6 @@ void Menu::statistical()
         tempBook = tempBook->next;
     }
 
-    // Customer statistics
     CustomerNode *tempCustomer = customerHead;
     while (tempCustomer != nullptr)
     {
@@ -1582,41 +1807,51 @@ void Menu::statistical()
     {
         system("cls");
         menuTable(x, y - 3, 60, 2);
-        writeString(x + 15, y - 2, L"[THỐNG KÊ THÔNG TIN CỬA HÀNG]");
+        writeString(x + 15, y - 2, L"[THỐNG KÊ THÔNG TIN CỬA HÀNG]", 0x70);
         menuTable(x, y, 60, 20);
-        writeString(x + 2, y + 2, L"Tổng số mặt hàng sách trong cửa hàng:");
+        writeString(x + 2, y + 2, L"Tổng số mặt hàng sách trong cửa hàng:", 0x70);
         gotoXY(x + 40, y + 2);
         cout << count_books;
-        writeString(x + 2, y + 5, L"Tổng số lượng sách:");
+
+        writeString(x + 2, y + 5, L"Tổng số lượng sách:", 0x70);
         gotoXY(x + 25, y + 5);
         cout << sum_products;
-        writeString(x + 2, y + 7, L"Vốn nhập hàng:");
+
+        writeString(x + 2, y + 7, L"Vốn nhập hàng:", 0x70);
         gotoXY(x + 16, y + 7);
         cout << sum_capital;
-        writeString(x + 2, y + 9, L"Tổng số khách hàng mua hàng:");
+
+        writeString(x + 2, y + 9, L"Tổng số khách hàng mua hàng:", 0x70);
         gotoXY(x + 30, y + 9);
         cout << num_customers;
-        gotoXY(x + 2, y + 12);
-        cout << "Tổng tiền thu được: " << total_revenue;
-        writeString(x + 2, y + 18, selectedOption == 0 ? L"[ CHI TIẾT ]" : L"  CHI TIẾT  ");
-        writeString(x + 30, y + 18, selectedOption == 1 ? L"[ TRO VE ]" : L"  TRO VE  ");
+
+        writeString(x + 2, y + 11, L"Tổng số hóa đơn:", 0x70);
+        gotoXY(x + 20, y + 11);
+        cout << total_invoices;
+
+        writeString(x + 2, y + 13, L"Tổng tiền thu được:", 0x70);
+        gotoXY(x + 25, y + 13);
+        cout << total_revenue;
+
+        writeString(x + 2, y + 18, selectedOption == 0 ? L"[ CHI TIẾT ]" : L"  CHI TIẾT  ", 0x70);
+        writeString(x + 30, y + 18, selectedOption == 1 ? L"[ TRO VE ]" : L"  TRO VE  ", 0x70);
         key = batphim();
 
-        if (key == 8)
+        if (key == 8) // Right arrow
         {
-            if (selectedOption < 2)
+            if (selectedOption < 1)
             {
                 selectedOption++;
             }
         }
-        else if (key == 7)
+        else if (key == 7) // Left arrow
         {
             if (selectedOption > 0)
             {
                 selectedOption--;
             }
         }
-        else if (key == 3)
+        else if (key == 3) // Enter key
         {
             if (selectedOption == 0)
             {
@@ -1624,146 +1859,136 @@ void Menu::statistical()
                 while (detailMenu)
                 {
                     system("cls");
-                    string year, month, day;
-                    bool found = false;
-                    // nhập năm
-                    writeString(x, y, L"Nhập Năm cần thống kê");
-                    menuTable(x + 25, y - 1, 20, 2);
-                    gotoXY(x + 26, y);
-                    getline(cin, year);
+                    string year, month;
 
-                    if (!isValidYear(year))
+                    while (true)
                     {
-                        trolaisua(x + 26, y, year);
-                        continue;
-                    }
-                    // nhập tháng
-                    writeString(x, y + 4, L"Nhập Tháng cần thống kê");
-                    menuTable(x + 25, y + 3, 20, 2);
-                    gotoXY(x + 27, y + 4);
-                    getline(cin, month);
+                        gotoXY(x + 26, y);
+                        cout << string(5, ' '); // Clear old input
+                        gotoXY(x + 27, y + 4);
+                        cout << string(5, ' '); // Clear old input
+                        writeString(x, y, L"Nhập Năm cần thống kê", 0x70);
+                        menuTable(x + 25, y - 1, 20, 2);
+                        gotoXY(x + 26, y);
+                        getline(cin, year);
 
-                    if (!isValidMonth(month))
-                    {
-                        trolaisua(x + 27, y + 4, month);
-                        continue;
-                    }
-                    // nhập ngày
-                    writeString(x, y + 8, L"Nhập ngày cần thống kê");
-                    menuTable(x + 25, y + 7, 20, 2);
-                    gotoXY(x + 27, y + 8);
-                    getline(cin, day);
-
-                    if (!isValidDate(day, month))
-                    {
-                        trolaisua(x + 27, y + 8, day);
-                        continue;
-                    }
-                    ifstream infile("bill.txt");
-                    if (!infile)
-                    {
-                        cout << "Khong the mo file!" << endl;
-                        return;
-                    }
-
-                    int sum_productsdetail = 0, sum_capitaldetail = 0, sum_cusDetail = 0, sum_BookDetail = 0;
-                    int n;
-                    infile >> n;
-                    int count = 0; // Biến đếm số lượng hóa đơn hợp lệ
-                    infile.ignore();
-                    string maHoaDonArr[1000]; // Giả sử số hóa đơn không quá 1000
-                    string makhachhangArr[1000];
-                    string ngayLapArr[1000];
-                    int soLuongArr[1000];
-                    int tongTienArr[1000];
-                    for (int i = 1; i <= n; ++i)
-                    {
-                        string maHoaDon, ngayLap, makhachhang;
-                        int soLuong, tongTien, ngay, thang_hoa_don, nam_hoa_don;
-                        getline(infile, maHoaDon, '|');
-                        getline(infile, makhachhang, '|');
-                        getline(infile, ngayLap, '|');
-                        infile >> soLuong;
-                        infile.ignore(1);
-                        infile >> tongTien;
-                        infile.ignore(1);
-                        sscanf(ngayLap.c_str(), "%d-%d-%d", &nam_hoa_don, &thang_hoa_don, &ngay);
-                        if (thang_hoa_don == stoi(month) && nam_hoa_don == stoi(year) && ngay == stoi(day))
+                        if (!isValidYear(year))
                         {
-                            maHoaDonArr[count] = maHoaDon;
-                            makhachhangArr[count] = makhachhang;
-                            ngayLapArr[count] = ngayLap;
-                            soLuongArr[count] = soLuong;
-                            tongTienArr[count] = tongTien;
-
-                            sum_productsdetail += soLuong;
-                            sum_capitaldetail += tongTien;
-                            sum_cusDetail++;
-                            sum_BookDetail++;
-                            found = true;
-                            count++; // Tăng biến đếm
+                            trolaisua(x + 26, y, year);
+                            continue;
                         }
-                    }
-                    infile.close();
+                        writeString(x, y + 4, L"Nhập Tháng cần thống kê", 0x70);
+                        menuTable(x + 25, y + 3, 20, 2);
+                        gotoXY(x + 27, y + 4);
+                        getline(cin, month);
 
-                    if (found)
-                    {
-                        int Sub_selectedOption = 0;
-                        while (true)
+                        if (!isValidMonth(month))
                         {
-                            system("cls");
-                            menuTable(x, y - 3, 60, 2);
-                            writeString(x + 15, y - 2, L"[THỐNG KÊ CHI TIẾT TRONG THÁNG]");
-                            menuTable(x, y, 60, 15);
-                            writeString(x + 2, y + 4, L"Tổng số lượng sách đã bán:");
-                            gotoXY(x + 30, y + 4);
-                            cout << sum_productsdetail;
-                            writeString(x + 2, y + 6, L"Doanh thu trong tháng:");
-                            gotoXY(x + 40, y + 6);
-                            cout << sum_capitaldetail << " VND";
-                            writeString(x + 2, y + 8, L"Số lượng khách hàng:");
-                            gotoXY(x + 30, y + 8);
-                            cout << sum_cusDetail;
-                            writeString(x + 2, y + 18, Sub_selectedOption == 0 ? L"[ CHI TIẾT ]" : L"  CHI TIẾT  ");
-                            writeString(x + 30, y + 18, Sub_selectedOption == 1 ? L"[ TRO VE ]" : L"  TRO VE  ");
+                            trolaisua(x + 27, y + 4, month);
+                            continue;
+                        }
 
-                            int Sub_key = batphim();
-                            if (Sub_key == 8) // Right arrow
+                        ifstream infile("bill.txt");
+                        if (!infile)
+                        {
+                            cout << "Không thể mở file!" << endl;
+                            return;
+                        }
+
+                        int n;
+                        infile >> n;
+                        infile.ignore();
+
+                        bool dataFound = false;
+                        sum_productsdetail = 0, sum_capitaldetail = 0, count_invoices_detail = 0;
+                        int count = 0;
+                        for (int i = 1; i <= n; ++i)
+                        {
+                            string maHoaDon, ngayLap, makhachhang;
+                            int soLuong, tongTien, ngay, thang_hoa_don, nam_hoa_don;
+                            getline(infile, maHoaDon, '|');
+                            getline(infile, makhachhang, '|');
+                            getline(infile, ngayLap, '|');
+                            infile >> soLuong;
+                            infile.ignore(1);
+                            infile >> tongTien;
+                            infile.ignore(1);
+                            sscanf(ngayLap.c_str(), "%d-%d-%d", &nam_hoa_don, &thang_hoa_don, &ngay);
+
+                            // Compare the month and year from the input and file
+                            if (thang_hoa_don == stoi(month) && nam_hoa_don == stoi(year))
                             {
-                                if (Sub_selectedOption < 1)
-                                {
-                                    Sub_selectedOption++;
-                                }
-                            }
-                            else if (Sub_key == 7) // Left arrow
-                            {
-                                if (Sub_selectedOption > 0)
-                                {
-                                    Sub_selectedOption--;
-                                }
-                            }
-                            else if (Sub_key == 3) // Enter key
-                            {
-                                if (Sub_selectedOption == 0)
-                                {
-                                    displayInvoice(count, maHoaDonArr, makhachhangArr, ngayLapArr, soLuongArr, tongTienArr);
-                                }
-                                else if (Sub_selectedOption == 1)
-                                {
-                                    detailMenu = false; // Exit to main statistics view
-                                    break;
-                                }
+                                maHoaDonArr[count] = maHoaDon;
+                                makhachhangArr[count] = makhachhang;
+                                ngayLapArr[count] = ngayLap;
+                                soLuongArr[count] = soLuong;
+                                tongTienArr[count] = tongTien;
+
+                                sum_productsdetail += soLuong;
+                                sum_capitaldetail += tongTien;
+                                count_invoices_detail++;
+                                count++;
+                                dataFound = true;
                             }
                         }
-                    }
-                    else
-                    {
-                        system("cls");
-                        writeString(x + 1, y + 4, L"Không tồn tại năm, tháng như đã nhập");
-                        menuTable(x, y + 3, 42, 2);
-                        if (setKeyBoard() == 5)
+                        infile.close();
+
+                        if (dataFound)
                         {
                             break;
+                        }
+                        else
+                        {
+                            menuTable(x, y + 7, 42, 2);
+                            writeString(x, y + 8, L"Dữ liệu không tồn tại! Vui lòng nhập lại.", 0x70);
+                        }
+                    }
+                    int Sub_selectedOption = 0;
+                    while (true)
+                    {
+                        system("cls");
+                        menuTable(x, y - 3, 60, 2);
+                        writeString(x + 15, y - 2, L"[THỐNG KÊ CHI TIẾT TRONG THÁNG]", 0x70);
+                        menuTable(x, y, 60, 15);
+                        writeString(x + 2, y + 4, L"Tổng số lượng sách đã bán:", 0x70);
+                        gotoXY(x + 30, y + 4);
+                        cout << sum_productsdetail;
+                        writeString(x + 2, y + 6, L"Doanh thu trong tháng:", 0x70);
+                        gotoXY(x + 40, y + 6);
+                        cout << sum_capitaldetail << " VND";
+                        writeString(x + 2, y + 8, L"Tổng số hóa đơn:", 0x70);
+                        gotoXY(x + 30, y + 8);
+                        cout << count_invoices_detail;
+
+                        writeString(x + 2, y + 18, Sub_selectedOption == 0 ? L"[ CHI TIẾT ]" : L"  CHI TIẾT  ", 0x70);
+                        writeString(x + 30, y + 18, Sub_selectedOption == 1 ? L"[ TRO VE ]" : L"  TRO VE  ", 0x70);
+
+                        int Sub_key = batphim();
+                        if (Sub_key == 8)
+                        {
+                            if (Sub_selectedOption < 1)
+                            {
+                                Sub_selectedOption++;
+                            }
+                        }
+                        else if (Sub_key == 7)
+                        {
+                            if (Sub_selectedOption > 0)
+                            {
+                                Sub_selectedOption--;
+                            }
+                        }
+                        else if (Sub_key == 3)
+                        {
+                            if (Sub_selectedOption == 0)
+                            {
+                                displayInvoice(count, maHoaDonArr, makhachhangArr, ngayLapArr, soLuongArr, tongTienArr);
+                            }
+                            else if (Sub_selectedOption == 1)
+                            {
+                                detailMenu = false;
+                                break;
+                            }
                         }
                     }
                 }

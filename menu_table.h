@@ -59,16 +59,21 @@ wstring menuSortUpandDown[] = {
 int menuUpandDownSize = sizeof(menuSortUpandDown) / sizeof(menuSortUpandDown[0]);
 
 wstring menuKhachHang[] = {
-    L"1> Nhập thông tin khách hàng",
-    L"2> Quản lý khách hàng",
-    L"3> Thoát"};
-
-// --- Functions ---
-inline void thanh_sang(int x, int y, int w, int h, int b_color, wstring menuItems[], int currentItem)
+    L"1> Thông tin khách hàng đã mua",
+    L"2> Thêm khách hàng mới"};
+int menuKhachHang = sizeof(menuKhachHang) / sizeof(menuKhachHang[0]);
+inline void thanh_sang(int x, int y, int w, int h, int b_color, wstring menuItems[], int currentItem, bool highlight)
 {
     SetConsoleOutputCP(CP_UTF8);
     _setmode(_fileno(stdout), _O_U16TEXT);
-    setcolor(15, b_color); // Màu chữ trắng (15), màu nền tùy chọn
+
+    // Nếu là highlight (thanh sáng), dùng màu nổi bật
+    if (highlight)
+        setcolor(0, b_color); // Chữ trắng, nền nổi bật
+    else
+        setcolor(0, 7); // Chữ trắng, nền xám
+
+    // Vẽ nền
     for (int iy = y + 1; iy <= y + h - 1; iy++)
     {
         for (int ix = x + 1; ix <= x + w - 1; ix++)
@@ -77,11 +82,10 @@ inline void thanh_sang(int x, int y, int w, int h, int b_color, wstring menuItem
             wcout << L" ";
         }
     }
-    gotoXY(x + 2, y + 1);
-    wcout << menuItems[currentItem]; // Hiển thị mục menu tương ứng
 
-    // Reset màu trở lại màu mặc định sau khi in thanh sáng
-    // Màu mặc định: chữ trắng, nền đen
+    // Hiển thị nội dung
+    gotoXY(x + 2, y + 1);
+    wcout << menuItems[currentItem];
 }
 
 inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, int boxX, int boxY, int boxW, int i)
@@ -89,14 +93,11 @@ inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, i
     SetConsoleOutputCP(CP_UTF8);
     _setmode(_fileno(stdout), _O_U16TEXT);
     Showcur(0);
-    int t_color = 11;
-    int b_color = 0;
-    int b_color_sang = 12;
-    int currentItem = 0;
 
-    // Draw box for menu
+    int b_color_sang = 12; // Nền nổi bật (đỏ nhạt)
+    int currentItem = 0;
+    // Vẽ khung menu
     menuTable(boxX, boxY - 3, boxW, 2);
-    // writeString(boxX + 5, boxY - 2, L"MENU");
     gotoXY(boxX + 14, boxY - 2);
     if (i == 1)
         wcout << "MENU ADMIN";
@@ -104,12 +105,11 @@ inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, i
         wcout << "MENU USER";
     menuTable(boxX, boxY, boxW, menuSize * 3 + 4);
 
-    // Print all menu items with default color
+    // Hiển thị toàn bộ mục menu với màu mặc định
     for (int i = 0; i < menuSize; i++)
     {
         gotoXY(x + 2, y + i * 3 + 1);
-        setcolor(7, 0); // Default color
-        wcout << menuItems[i];
+        thanh_sang(x, y + i * 3, w, h, 7, menuItems, i, false); // Chữ trắng, nền xám
     }
 
     int xp = x, yp = y, xcu = xp, ycu = yp;
@@ -117,17 +117,17 @@ inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, i
 
     while (true)
     {
-        if (kt == true)
+        if (kt)
         {
-            // Reset previous item to default color
-            thanh_sang(xcu, ycu, w, h, b_color, menuItems, (ycu - y) / 3);
+            // Reset màu của mục trước đó
+            thanh_sang(xcu, ycu, w, h, 7, menuItems, (ycu - y) / 3, false);
 
-            // Update current coordinates
+            // Cập nhật vị trí mới
             xcu = xp;
             ycu = yp;
 
-            // Highlight new item
-            thanh_sang(xcu, ycu, w, h, b_color_sang, menuItems, (yp - y) / 3);
+            // Tô sáng mục hiện tại
+            thanh_sang(xcu, ycu, w, h, b_color_sang, menuItems, (yp - y) / 3, true);
             kt = false;
         }
 
@@ -135,38 +135,38 @@ inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, i
         {
             char c = _getch();
             if (c == -32)
-            { // Arrow keys
+            { // Phím mũi tên
                 kt = true;
                 c = _getch();
                 if (c == 72)
-                { // Up arrow key
+                { // Mũi tên lên
                     if (yp != y)
                         yp -= 3;
                     else
-                        yp = y + 3 * (menuSize - 1); // Loop back to last item
+                        yp = y + 3 * (menuSize - 1); // Quay lại mục cuối
                 }
                 else if (c == 80)
-                { // Down arrow key
+                { // Mũi tên xuống
                     if (yp != y + 3 * (menuSize - 1))
                         yp += 3;
                     else
-                        yp = y; // Loop back to first item
+                        yp = y; // Quay lại mục đầu
                 }
             }
             else if (c == 13)
-            {                        // Enter key
-                setcolor(7, 0);      // Reset color to default before executing action
-                return (yp - y) / 3; // Return the selected menu index
+            {                        // Phím Enter
+                setcolor(7, 0);      // Reset màu mặc định
+                return (yp - y) / 3; // Trả về chỉ mục menu
             }
             else if (c == 27)
-            {                   // ESC key
-                setcolor(7, 0); // Reset color to default on ESC
-                return -1;      // Exit on ESC key press
+            {                   // Phím ESC
+                setcolor(7, 0); // Reset màu mặc định
+                return -1;      // Thoát menu
             }
         }
     }
 
-    // Reset color to default at the end
+    // Reset màu mặc định
     setcolor(7, 0);
     gotoXY(0, 30);
     return -1;
@@ -178,12 +178,12 @@ inline void Thong_Tin()
     while (true)
     {
         menuTable(x + 29, y + 2, 65, 19);
-        writeString(x + 57, y + 3, L"PBL2");
-        writeString(x + 37, y + 5, L"CHƯƠNG TRÌNH QUẢN LÍ CỬA HÀNG CHUYÊN VỀ SÁCH");
-        writeString(x + 33, y + 9, L"Sinh viên thực hiện: Trần Quốc Đạt  Lớp: 23T_NHAT2");
-        writeString(x + 33, y + 11, L"Sinh viên thực hiện: Cao Minh Đức   Lớp: 23T_NHAT2");
-        writeString(x + 33, y + 13, L"Giáo viên hướng dẫn: Thầy Võ Đức Hoàng");
-        writeString(x + 33, y + 15, L"Cảm ơn: Các thầy, cô giáo trong bộ môn đã giúp đỡ chúng em");
+        writeString(x + 57, y + 3, L"PBL2", 0x70);
+        writeString(x + 37, y + 5, L"CHƯƠNG TRÌNH QUẢN LÍ CỬA HÀNG CHUYÊN VỀ SÁCH", 0x70);
+        writeString(x + 33, y + 9, L"Sinh viên thực hiện: Trần Quốc Đạt  Lớp: 23T_NHAT2", 0x70);
+        writeString(x + 33, y + 11, L"Sinh viên thực hiện: Cao Minh Đức   Lớp: 23T_NHAT2", 0x70);
+        writeString(x + 33, y + 13, L"Giáo viên hướng dẫn: Thầy Võ Đức Hoàng", 0x70);
+        writeString(x + 33, y + 15, L"Cảm ơn: Các thầy, cô giáo trong bộ môn đã giúp đỡ chúng em", 0x70);
         if (setKeyBoard() == 5)
         {
             break;

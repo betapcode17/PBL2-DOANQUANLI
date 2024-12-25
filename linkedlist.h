@@ -40,6 +40,5 @@ public:
     Book *getNodeBook(int);
     Customer *getNodeCustomer(int);
     int find_NodeCustomer(const string &);
-    void readBook(const string &fileName);
     void readCustomer(const string &fileName);
 };

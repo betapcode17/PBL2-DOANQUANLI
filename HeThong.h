@@ -10,6 +10,44 @@
 #include <io.h>
 #include <fcntl.h>
 using namespace std;
+#include <windows.h>
+#include <iostream>
+
+inline void SetConsoleBackgroundToGray()
+{
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    if (hConsole == INVALID_HANDLE_VALUE)
+    {
+        std::cerr << "Error: Unable to get console handle." << std::endl;
+        return;
+    }
+
+    // Lấy thông tin buffer console
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    if (!GetConsoleScreenBufferInfo(hConsole, &csbi))
+    {
+        std::cerr << "Error: Unable to get console buffer info." << std::endl;
+        return;
+    }
+
+    // Tính tổng số ô cần thay đổi trong console
+    DWORD consoleSize = csbi.dwSize.X * csbi.dwSize.Y;
+    DWORD charsWritten;
+
+    // Màu nền xám (BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE)
+    WORD grayBackground = BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE;
+
+    // Thay đổi màu nền toàn bộ console
+    FillConsoleOutputAttribute(hConsole, grayBackground, consoleSize, {0, 0}, &charsWritten);
+
+    // Thay đổi nội dung thành khoảng trắng
+    FillConsoleOutputCharacter(hConsole, ' ', consoleSize, {0, 0}, &charsWritten);
+
+    // Đặt lại con trỏ về góc trên bên trái
+    SetConsoleCursorPosition(hConsole, {0, 0});
+}
+
 inline void gotoXY(int x, int y)
 {
     COORD coord = {static_cast<SHORT>(x), static_cast<SHORT>(y)};
@@ -81,7 +119,9 @@ inline void writeChar(int x, int y, const wchar_t *z)
 {
     // Save the current mode
     int oldMode = _setmode(_fileno(stdout), _O_U16TEXT);
-
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     // Move the cursor to the specified position and print the wide character string
     gotoXY(x, y);
     wcout << z;
@@ -152,28 +192,47 @@ inline int setClick(int &a, int &b)
 inline void menuTable(int x, int y, int m, int n)
 {
     int i, j;
-    // HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-    // SetConsoleTextAttribute(consoleHandle, 0x70);
-    for (i = x; i <= x + m; i++)
-        for (j = y; j <= y + n; j++)
-        {
-            if (i == x || i == x + m)
-            {
-                if (j == y && i != x + m)
-                    writeChar(i, j, L"╔");
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 
-                else if (j == y && i != x)
-                    writeChar(i, j, L"╗");
-                else if (j == y + n && i != x + m)
-                    writeChar(i, j, L"╚");
-                else if (j == y + n && i != x)
-                    writeChar(i, j, L"╝");
-                else
-                    writeChar(i, j, L"║");
-            }
+    // Thiết lập màu nền xám và màu chữ mặc định
+    SetConsoleTextAttribute(consoleHandle, 0x70);
+
+    for (j = y; j <= y + n; j++) // Duyệt từng dòng
+    {
+        for (i = x; i <= x + m; i++) // Duyệt từng cột
+        {
+            // Góc trên trái
+            if (i == x && j == y)
+                writeChar(i, j, L"╔");
+
+            // Góc trên phải
+            else if (i == x + m && j == y)
+                writeChar(i, j, L"╗");
+
+            // Góc dưới trái
+            else if (i == x && j == y + n)
+                writeChar(i, j, L"╚");
+
+            // Góc dưới phải
+            else if (i == x + m && j == y + n)
+                writeChar(i, j, L"╝");
+
+            // Đường viền ngang
             else if (j == y || j == y + n)
                 writeChar(i, j, L"═");
+
+            // Đường viền dọc
+            else if (i == x || i == x + m)
+                writeChar(i, j, L"║");
+
+            // Bên trong khung: đảm bảo màu nền
+            else
+            {
+                SetConsoleCursorPosition(consoleHandle, {(SHORT)i, (SHORT)j});
+                std::wcout << L" ";
+            }
         }
+    }
 }
 // sự kiện bàn phím
 inline int setKeyBoard()
@@ -237,37 +296,62 @@ inline int batphim()
             return 13;
     }
 }
-inline void writeString(int x, int y, const std::wstring &s)
+inline void writeString(int x, int y, const std::wstring &s, int color)
 {
     // Set console mode to handle Unicode characters (UTF-16)
     _setmode(_fileno(stdout), _O_U16TEXT);
     SetConsoleOutputCP(CP_UTF8);
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    // Set the text attribute to the specified color
+    SetConsoleTextAttribute(consoleHandle, color);
+
+    // Move the cursor to the specified position
     gotoXY(x, y);
 
     // Output the string with wcout
     std::wcout << s;
+
+    // Reset the console mode back to text mode
     _setmode(_fileno(stdout), _O_TEXT);
 }
-
 inline void display_login()
 {
+    // Xóa toàn bộ màn hình và thiết lập nền xám
     system("cls");
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    SetConsoleBackgroundToGray();
+
+    // Đặt màu chữ
     setTextColor(11);
+
+    // Vẽ khung tiêu đề
     menuTable(30, 1, 60, 3);
-    writeString(34, 2, L"CHÀO MỪNG BẠN ĐẾN VỚI ỨNG DỤNG QUẢN LÍ NHÀ SÁCH");
+    writeString(34, 2, L"CHÀO MỪNG BẠN ĐẾN VỚI ỨNG DỤNG QUẢN LÍ NHÀ SÁCH", 0x74);
+
+    // Vẽ khung chính
     menuTable(40, 5, 40, 20);
-    writeChar(45, 8, L"Username");
-    menuTable(45, 10, 30, 2);
-    writeChar(45, 14, L"Password");
-    menuTable(45, 15, 30, 2);
-    writeChar(45, 18, L"Press Tab to show/hide password.");
+
+    // Vẽ label và textbox "Username"
+    writeString(45, 8, L"Username", 0x71);
+    menuTable(45, 10, 30, 2); // Khung textbox Username
+
+    // Vẽ label và textbox "Password"
+    writeString(45, 14, L"Password", 0x71);
+    menuTable(45, 15, 30, 2); // Khung textbox Password
+
+    // Vẽ gợi ý "Press Tab to show/hide password"
+    writeString(45, 18, L"Press Tab to show/hide password.", 0x71);
+
+    // Vẽ nút "Login"
     menuTable(45, 20, 30, 2);
-    writeChar(57, 21, L"Login");
-    writeString(60, 23, L"\033[4mForgot password\033[0m");
-    writeString(48, 23, L"\033[4mSIGN UP\033[0m");
+    writeString(57, 21, L"Login", 0x71);
+
+    // Vẽ "SIGN UP" và "Forgot password"
+    setTextColor(11); // Đặt lại màu chữ để tạo hiệu ứng gạch chân
+    writeString(48, 23, L"\033[4mSIGN UP\033[0m", 0x71);
+    writeString(60, 23, L"\033[4mForgot password\033[0m", 0x71);
 }
+
 inline void hideCursor()
 {
     HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE); // Lấy handle của console
@@ -317,18 +401,20 @@ inline void menuDisplay(int x, int y, int sl, int number = 1, int sum = 1)
             }
         }
     }
-    writeString(x + 8, y + 1, L"Mã Sách");
-    writeString(x + 30, y + 1, L"Tên Sách");
-    writeString(x + 60, y + 1, L"Thể Loại");
-    writeString(x + 85, y + 1, L"Tên Tác Giả");
-    writeString(x + 104, y + 1, L"Năm xuất bản");
-    writeString(x + 125, y + 1, L"SL");
-    writeString(x + 136, y + 1, L"Giá Bán");
+    writeString(x + 8, y + 1, L"Mã Sách", 0x71);
+    writeString(x + 30, y + 1, L"Tên Sách", 0x71);
+    writeString(x + 60, y + 1, L"Thể Loại", 0x71);
+    writeString(x + 85, y + 1, L"Tên Tác Giả", 0x71);
+    writeString(x + 104, y + 1, L"Năm xuất bản", 0x71);
+    writeString(x + 125, y + 1, L"SL", 0x71);
+    writeString(x + 136, y + 1, L"Giá Bán", 0x71);
     // writeString(x + 40, y - 1, L"Nhấn ESC để quay trở lại ");
     if (sum > 1)
     {
-        writeString(x + 3, y + 24, L"Nhấn nút [->] để tới trang tiếp theo, [<-] để quay về trang trước!!");
-        writeString(x + 135, y - 2, L"Trang: ");
+        HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(consoleHandle, 0x74); // 0x74 = nền xám + chữ đỏ
+        writeString(x + 3, y + 24, L"Nhấn nút [->] để tới trang tiếp theo, [<-] để quay về trang trước!!", 0x74);
+        writeString(x + 135, y - 2, L"Trang: ", 0x74);
         wcout << number << L"/" << sum;
     }
 }
@@ -373,13 +459,13 @@ inline void bangsanpham(int x, int y, int sl)
             }
         }
     }
-    writeString(x + 5, y + 1, L"Mã Sách");
-    writeString(x + 30, y + 1, L"Tên Sách");
-    writeString(x + 60, y + 1, L"Thể Loại");
-    writeString(x + 85, y + 1, L"Tên Tác Giả");
-    writeString(x + 104, y + 1, L"Năm xuất bản");
-    writeString(x + 125, y + 1, L"SL");
-    writeString(x + 136, y + 1, L"Giá Bán");
+    writeString(x + 5, y + 1, L"Mã Sách", 0x71);
+    writeString(x + 30, y + 1, L"Tên Sách", 0x71);
+    writeString(x + 60, y + 1, L"Thể Loại", 0x71);
+    writeString(x + 85, y + 1, L"Tên Tác Giả", 0x71);
+    writeString(x + 104, y + 1, L"Năm xuất bản", 0x71);
+    writeString(x + 125, y + 1, L"SL", 0x71);
+    writeString(x + 136, y + 1, L"Giá Bán", 0x71);
 }
 inline void menuDisplay2(int x, int y, int sl, int number = 1, int sum = 1)
 {
@@ -421,16 +507,16 @@ inline void menuDisplay2(int x, int y, int sl, int number = 1, int sum = 1)
             }
         }
     }
-    writeString(x + 10, y + 1, L"Mã KH");
-    writeString(x + 30, y + 1, L"Họ và tên");
-    writeString(x + 60, y + 1, L"Địa chỉ");
-    writeString(x + 85, y + 1, L"SĐT");
-    writeString(x + 104, y + 1, L"số tiền đã mua");
-    writeString(x + 40, y - 1, L"Nhấn ESC để quay trở lại ");
+    writeString(x + 10, y + 1, L"Mã KH", 0x71);
+    writeString(x + 30, y + 1, L"Họ và tên", 0x71);
+    writeString(x + 60, y + 1, L"Địa chỉ", 0x71);
+    writeString(x + 85, y + 1, L"SĐT", 0x71);
+    writeString(x + 104, y + 1, L"số tiền đã mua", 0x71);
+    writeString(x + 40, y - 1, L"Nhấn ESC để quay trở lại ", 0x74);
     if (sum > 1)
     {
-        writeString(x + 3, y + 24, L"Nhấn nút [->] để tới trang tiếp theo, [<-] để quay về trang trước!!");
-        writeString(x + 135, y - 2, L"Trang: ");
+        writeString(x + 3, y + 24, L"Nhấn nút [->] để tới trang tiếp theo, [<-] để quay về trang trước!!", 0x74);
+        writeString(x + 135, y - 2, L"Trang: ", 0x74);
         wcout << number << L"/" << sum;
     }
 }
@@ -474,11 +560,11 @@ inline void Ordertable(int x, int y, int sl)
             }
         }
     }
-    writeString(x + 2, y + 1, L"STT");
-    writeString(x + 15, y + 1, L"Tên sách");
-    writeString(x + 45, y + 1, L"Số lượng");
-    writeString(x + 65, y + 1, L"Đơn giá");
-    writeString(x + 85, y + 1, L"Thành tiền");
+    writeString(x + 2, y + 1, L"STT", 0x71);
+    writeString(x + 15, y + 1, L"Tên sách", 0x71);
+    writeString(x + 45, y + 1, L"Số lượng", 0x71);
+    writeString(x + 65, y + 1, L"Đơn giá", 0x71);
+    writeString(x + 85, y + 1, L"Thành tiền", 0x71);
 }
 inline void Bill_Table(int x, int y, int sl, int number = 1, int sum = 1)
 {
@@ -520,18 +606,18 @@ inline void Bill_Table(int x, int y, int sl, int number = 1, int sum = 1)
     }
 
     // Adjusted column text positions for narrower layout
-    writeString(x + 8, y + 1, L"Mã HĐ");
-    writeString(x + 23, y + 1, L"Mã KH");
-    writeString(x + 40, y + 1, L"Ngày lập hóa đơn");
-    writeString(x + 65, y + 1, L"Số lượng");
-    writeString(x + 85, y + 1, L"Tổng tiền");
+    writeString(x + 8, y + 1, L"Mã HĐ", 0x70);
+    writeString(x + 23, y + 1, L"Mã KH", 0x70);
+    writeString(x + 40, y + 1, L"Ngày lập hóa đơn", 0x70);
+    writeString(x + 65, y + 1, L"Số lượng", 0x70);
+    writeString(x + 85, y + 1, L"Tổng tiền", 0x70);
 
     // Adjusted position for ESC instruction
-    writeString(x + 20, y - 1, L"Nhấn ESC để quay trở lại ");
+    writeString(x + 20, y - 1, L"Nhấn ESC để quay trở lại ", 0x74);
     if (sum > 1)
     {
-        writeString(x + 3, y + 24, L"Nhấn nút [->] để tới trang tiếp theo, [<-] để quay về trang trước!!");
-        writeString(x + 85, y - 2, L"Trang: ");
+        writeString(x + 3, y + 24, L"Nhấn nút [->] để tới trang tiếp theo, [<-] để quay về trang trước!!", 0x74);
+        writeString(x + 85, y - 2, L"Trang: ", 0x74);
         wcout << number << L"/" << sum;
     }
 }

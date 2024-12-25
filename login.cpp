@@ -23,6 +23,9 @@ wstring Users::getPassword()
     wstring password;
     char ch;
     bool showPassword = false;
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     while ((ch = _getch()) != '\r')
     {
         if (ch == '\b' && !password.empty())
@@ -64,6 +67,9 @@ wstring Users::getName()
 {
     wstring name;
     char ch;
+    HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+    // Thiết lập màu chữ trắng trên nền xám (0x70: nền xám, chữ trắng)
+    SetConsoleTextAttribute(consoleHandle, 0x70);
     while ((ch = _getch()) != '\r')
     { // Đọc cho đến khi nhấn Enter ('\r')
         if (ch == '\b' && name.length() > 0)
@@ -87,7 +93,6 @@ bool Users::login()
     WORD savedAttributes;
     GetConsoleScreenBufferInfo(consoleHandle, &consoleInfo);
     savedAttributes = consoleInfo.wAttributes;
-
     display_login();
 
     while (true)
@@ -137,7 +142,7 @@ bool Users::login()
         }
         while (true)
         {
-            writeString(46, 11, username);
+            writeString(46, 11, username, 0x70);
             setClick(x, y);
             if (x >= 45 && x <= 75 && y >= 15 && y <= 18)
             {
@@ -164,7 +169,7 @@ bool Users::login()
         if (!infile.is_open())
         {
             menuTable(53, 10, 66, 4); // Assuming menuTable is defined elsewhere
-            writeString(57, 12, L"Khong the mo tap tin");
+            writeString(57, 12, L"Khong the mo tap tin", 0x70);
             if (_getch())
                 system("cls");
             return false;
@@ -214,8 +219,9 @@ void Users::forgot_password()
     system("cls");
     setTextColor(11);
     _setmode(_fileno(stdout), _O_U16TEXT);
+    SetConsoleBackgroundToGray();
     menuTable(45, 10, 40, 3);
-    writeString(46, 11, L"Nhap ten dang nhap: ");
+    writeString(46, 11, L"Nhap ten dang nhap: ", 0x70);
     wstring username_input;
     while (true)
     {
@@ -230,7 +236,7 @@ void Users::forgot_password()
     if (!infile.is_open())
     {
         menuTable(53, 10, 70, 4);
-        writeString(57, 12, L"KHÔNG THỂ MỞ TỆP TIN.");
+        writeString(57, 12, L"KHÔNG THỂ MỞ TỆP TIN.", 0x70);
         if (_getch())
             system("cls");
         return;
@@ -242,7 +248,7 @@ void Users::forgot_password()
     if (!tempFile.is_open())
     {
         menuTable(53, 10, 70, 4);
-        writeString(57, 12, L"KHÔNG THỂ TẠO TỆP TẠM THỜI.");
+        writeString(57, 12, L"KHÔNG THỂ TẠO TỆP TẠM THỜI.", 0x70);
         if (_getch())
             system("cls");
         return;
@@ -291,7 +297,7 @@ void Users::forgot_password()
     }
     else
     {
-        writeString(45, 8, L"Khong ton tai tai khoan nay!!!");
+        writeString(45, 8, L"Khong ton tai tai khoan nay!!!", 0x70);
         _wremove(L"temp.txt");
         while (true)
         {
@@ -307,18 +313,20 @@ void Users::forgot_password()
 }
 void Users::register_account()
 {
+
     system("cls");
     setTextColor(11);
     _setmode(_fileno(stdout), _O_U16TEXT); // Enable Unicode output
 
     // Check for account count in file
     // Display title
-    writeString(50, 8, L"THÊM TÀI KHOẢN ĐĂNG NHẬP");
+    SetConsoleBackgroundToGray();
+    writeString(50, 8, L"THÊM TÀI KHOẢN ĐĂNG NHẬP", 0x70);
     menuTable(45, 12, 40, 2);
-    writeString(46, 13, L"NHẬP TÊN ĐĂNG NHẬP MỚI : ");
+    writeString(46, 13, L"NHẬP TÊN ĐĂNG NHẬP MỚI : ", 0x70);
     // Input field for username
     menuTable(45, 16, 40, 2);
-    writeString(46, 17, L"NHẬP PASSWORD : ");
+    writeString(46, 17, L"NHẬP PASSWORD : ", 0x70);
     // Validate and input username
     wstring username_input;
     bool valid_username = false;
@@ -334,7 +342,7 @@ void Users::register_account()
 
         if (username_input.empty())
         {
-            writeString(50, 24, L"TÊN ĐĂNG NHẬP KHÔNG ĐƯỢC ĐỂ TRỐNG. VUI LÒNG THỬ LẠI.");
+            writeString(50, 24, L"TÊN ĐĂNG NHẬP KHÔNG ĐƯỢC ĐỂ TRỐNG. VUI LÒNG THỬ LẠI.", 0x70);
             continue;
         }
 
@@ -342,7 +350,7 @@ void Users::register_account()
         wifstream infile("dangnhap.txt");
         if (!infile.is_open())
         {
-            writeString(50, 24, L"KHÔNG THỂ MỞ TỆP TIN ĐỂ KIỂM TRA.");
+            writeString(50, 24, L"KHÔNG THỂ MỞ TỆP TIN ĐỂ KIỂM TRA.", 0x70);
             return;
         }
 
@@ -368,7 +376,7 @@ void Users::register_account()
 
         if (account_exists)
         {
-            writeString(40, 15, L"[TÊN ĐĂNG NHẬP ĐÃ TỒN TẠI. VUI LÒNG CHỌN TÊN KHÁC]");
+            writeString(40, 15, L"[TÊN ĐĂNG NHẬP ĐÃ TỒN TẠI. VUI LÒNG CHỌN TÊN KHÁC]", 0x70);
         }
         else
         {
@@ -405,7 +413,7 @@ void Users::register_account()
     wofstream account_file("dangnhap.txt", ios::app);
     if (!account_file.is_open())
     {
-        writeString(50, 24, L"KHÔNG THỂ MỞ TỆP TIN ĐỂ LƯU THÔNG TIN.");
+        writeString(50, 24, L"KHÔNG THỂ MỞ TỆP TIN ĐỂ LƯU THÔNG TIN.", 0x70);
         return;
     }
     account_file << username_input << L" " << password_input << L" " << Role << L"\n";
