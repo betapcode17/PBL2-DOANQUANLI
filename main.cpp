@@ -15,7 +15,7 @@ void ShowMenuAdmin()
 {
     int choice;
     bool exitFlag = false;
-   
+
     while (!exitFlag)
     {
         system("cls");
@@ -186,7 +186,7 @@ void ShowMenuAdmin()
         {
             // thoát
             SetConsoleBackgroundToGray();
-            Thong_Tin();
+            admin.ShowAllAccount();
             break;
         }
         case 4:
@@ -334,7 +334,6 @@ void ShowMenuUser()
             // user.Order();
             SetConsoleBackgroundToGray();
             order.ProcessOrder();
-            user.ShowAllCus();
             break;
         }
         case 3:
@@ -376,7 +375,9 @@ void Process()
 }
 int main()
 {
-    Process();
-    // order.ProcessOrder();
-    admin.UpdateBook();
+    system("chcp 65001");
+   Process();
+//    Account_Table(2, 4, 23, 1, 8);
+
+//change_role(30,30);
 }

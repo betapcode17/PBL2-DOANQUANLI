@@ -264,6 +264,326 @@ void Menu::ShowAllBook()
 
     delete[] first; // Clean up allocated memory
 }
+
+void Menu::ShowAllAccount()
+{
+    int c = 60;            // Giảm chiều rộng bảng vì bỏ cột Mật khẩu
+    int screenWidth = 120; // Chiều rộng màn hình
+    int screenHeight = 30; // Chiều cao màn hình
+    int selectedOption = 0;
+    // Tính toán vị trí trung tâm
+    int x = (screenWidth - c) / 2;   // Căn giữa theo chiều ngang
+    int y = (screenHeight - 16) / 2; // Căn giữa theo chiều dọc (trừ thêm khoảng header, footer và các dòng dữ liệu)
+                                     // Biến lưu lựa chọn menu hiện tại
+    SetConsoleBackgroundToGray();
+
+    int page = 1, tam = 0;
+    while (tam == 0)
+    {
+        // Đọc dữ liệu từ file
+        ifstream file("dangnhap.txt");
+        if (!file)
+        {
+            cout << "Không thể mở file dangnhap.txt!" << endl;
+            return;
+        }
+
+        // Khai báo ba mảng
+        string usernames[100]; // Mảng lưu tên tài khoản
+        string passwords[100]; // Mảng lưu mật khẩu
+        string roles[100];     // Mảng lưu vai trò
+        int totalAccounts = 0;
+
+        int n;
+        file >> n; // Đọc số lượng tài khoản từ dòng đầu tiên
+
+        // Đọc các dòng tiếp theo và lưu vào mảng
+        while (totalAccounts < n && file >> usernames[totalAccounts] >> passwords[totalAccounts] >> roles[totalAccounts])
+        {
+            totalAccounts++;
+        }
+        file.close();
+
+        // Tính số trang
+        int recordsPerPage = 8; // Số tài khoản mỗi trang là 8
+        int sum = (totalAccounts + recordsPerPage - 1) / recordsPerPage;
+
+        HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(consoleHandle, 0x70);
+        system("cls");
+        const wchar_t *name = L"[ DANH SÁCH TÀI KHOẢN ]";
+        writeString(2, 2, name, 0x74);
+
+        // Hiển thị bảng
+        Account_Table(x, y + 2, 19, page, sum); // Hiển thị header và số trang
+
+        // Tính chỉ số bắt đầu và kết thúc cho trang hiện tại
+        int startIndex = (page - 1) * recordsPerPage;
+        int endIndex = min(startIndex + recordsPerPage, totalAccounts);
+
+        // Hiển thị dữ liệu của trang hiện tại
+        for (int i = startIndex; i < endIndex; ++i)
+        {
+            int rowY = y + 3 + (i - startIndex) * 2; // Vị trí dòng
+            HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+            SetConsoleTextAttribute(consoleHandle, 0x71);
+
+            // Hiển thị STT (count_Account)
+            gotoXY(x + 3, rowY - 2);
+            cout << i + 1; // STT = chỉ số của mảng + 1 (tính từ 1)
+            gotoXY(x + 15, rowY - 2);
+            cout << usernames[i];
+            gotoXY(x + 37, rowY - 2);
+            cout << (roles[i] == "0" ? "User" : "Admin"); // Chuyển đổi giá trị vai trò từ "0" và "1" thành tên vai trò
+        }
+
+        // Xử lý phím điều hướng
+        int key = setKeyBoard();
+        if (key == 4 && page < sum)
+        { // Next page
+            page++;
+        }
+        else if (key == 3 && page > 1)
+        { // Previous page
+            page--;
+        }
+        else if (key == 9) // Tab key for menu
+        {
+
+            while (true)
+            {
+
+                int keyInput;
+                gotoXY(30, 30);
+
+                // Hiển thị menu với 3 mục mới
+                menuTable(x, 27, 70, 2); // Tăng chiều rộng menu cho phù hợp với 4 mục
+                writeString(x + 5, 28, selectedOption == 0 ? L"[ Change Role ]" : L"  Change Role", 0x71);
+                writeString(x + 30, 28, selectedOption == 1 ? L"[ Delete Account ]" : L"  Delete Account", 0x71);
+                writeString(x + 60, 28, selectedOption == 2 ? L"[ Exit ]" : L"  Exit", 0x71);
+
+                keyInput = batphim(); // Lấy phím nhấn từ người dùng
+                gotoXY(38, 30);
+
+                // Di chuyển trong menu dựa trên phím mũi tên
+                if (keyInput == 8) // RIGHT key (sang phải)
+                {
+                    if (selectedOption < 2) // Bây giờ có 3 lựa chọn (0-2)
+                    {
+                        selectedOption++;
+                    }
+                }
+                else if (keyInput == 7) // LEFT key (sang trái)
+                {
+                    if (selectedOption > 0)
+                    {
+                        selectedOption--;
+                    }
+                }
+                else if (keyInput == 5) // ESC để thoát khỏi menu
+                {
+                    break;
+                }
+                else if (keyInput == 3) // Enter để chọn
+                {
+                    if (selectedOption == 0)
+                    {
+
+                        ChangeRole();
+                        break;
+                    }
+                    else if (selectedOption == 1)
+                    {
+                        // Gọi hàm xóa tài khoản
+                        DeleteAccount();
+                        break;
+                    }
+                    else if (selectedOption == 2)
+                    {
+                        tam = 1; // Thoát khỏi menu và tiếp tục vòng lặp chính
+                        break;
+                    }
+                }
+
+                writeString(x + 5, 28, selectedOption == 0 ? L"[ Change Role ]" : L"  Change Role", 0x71);
+                writeString(x + 30, 28, selectedOption == 1 ? L"[ Delete Account ]" : L"  Delete Account", 0x71);
+                writeString(x + 60, 28, selectedOption == 2 ? L"[ Exit ]" : L"  Exit", 0x71);
+            }
+        }
+        else if (key == 5)
+        { // Exit
+            tam = 1;
+            break;
+        }
+    }
+}
+
+void Menu::DeleteAccount()
+{
+    int x = 30, y = 30;
+    menuTable(x, y, 50, 3);
+    writeString(x + 5, y + 1, L"[ Username ]: ", 0x70);
+    string usernameToDelete;
+    gotoXY(48, 31);
+    cin >> usernameToDelete;
+
+    // Mở file dangnhap.txt để đọc dữ liệu
+    ifstream file("dangnhap.txt");
+    if (!file)
+    {
+        cout << "Không thể mở file dangnhap.txt!" << endl;
+        return;
+    }
+
+    // Khai báo các mảng lưu tài khoản, mật khẩu và vai trò
+    string usernames[100];
+    string passwords[100];
+    string roles[100];
+    int totalAccounts = 0;
+
+    // Đọc dữ liệu vào mảng
+    int n;
+    file >> n; // Đọc số lượng tài khoản
+    while (totalAccounts < n && file >> usernames[totalAccounts] >> passwords[totalAccounts] >> roles[totalAccounts])
+    {
+        totalAccounts++;
+    }
+    file.close();
+
+    // Tìm và xóa tài khoản
+    bool found = false;
+    for (int i = 0; i < totalAccounts; ++i)
+    {
+        if (usernames[i] == usernameToDelete)
+        {
+            found = true;
+            // Dịch chuyển các tài khoản sau lên một vị trí
+            for (int j = i; j < totalAccounts - 1; ++j)
+            {
+                usernames[j] = usernames[j + 1];
+                passwords[j] = passwords[j + 1];
+                roles[j] = roles[j + 1];
+            }
+            totalAccounts--; // Giảm tổng số tài khoản
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        gotoXY(48, 33);
+        cout << "[Tài khoản không tồn tại]" << endl;
+        return;
+    }
+
+    // Ghi lại các tài khoản còn lại vào file
+    ofstream outFile("dangnhap.txt");
+    if (!outFile)
+    {
+        cout << "Không thể mở file dangnhap.txt để ghi!" << endl;
+        return;
+    }
+
+    outFile << totalAccounts << endl;
+    for (int i = 0; i < totalAccounts; ++i)
+    {
+        outFile << usernames[i] << " " << passwords[i] << " " << roles[i] << endl;
+    }
+    outFile.close();
+    if (MessageBoxW(NULL, L"Tài khoản đã được xóa thành công", L"Thông báo", MB_OK | MB_ICONINFORMATION) == IDOK)
+    {
+        return;
+    }
+}
+void Menu::ChangeRole()
+{
+    string usernameToChange;
+    int x = 30, y = 30;
+
+    // Hiển thị bảng nhập liệu
+    menuTable(x, y, 70, 3);
+    writeString(x + 3, y + 1, L"[ Username ]: ", 0x70);
+    writeString(x + 30, y + 1, L"[ Role (Admin:1 || User:0) ]: ", 0x70);
+    gotoXY(46, 31);
+    cin >> usernameToChange;
+
+    // Mở file dangnhap.txt để đọc dữ liệu
+    ifstream file("dangnhap.txt");
+    if (!file)
+    {
+        cout << "Không thể mở file dangnhap.txt!" << endl;
+        return;
+    }
+
+    // Khai báo các mảng lưu tài khoản, mật khẩu và vai trò
+    string usernames[100];
+    string passwords[100];
+    string roles[100];
+    int totalAccounts = 0;
+
+    // Đọc dữ liệu vào mảng
+    int n;
+    file >> n; // Đọc số lượng tài khoản
+    while (totalAccounts < n && file >> usernames[totalAccounts] >> passwords[totalAccounts] >> roles[totalAccounts])
+    {
+        totalAccounts++;
+    }
+    file.close();
+
+    // Tìm tài khoản và thay đổi quyền
+    bool found = false;
+    for (int i = 0; i < totalAccounts; ++i)
+    {
+        if (usernames[i] == usernameToChange)
+        {
+            found = true;
+            // Thay đổi vai trò
+            int role;
+            gotoXY(92, 31);
+            cin >> role;
+
+            // Kiểm tra giá trị role nhập vào (0 hoặc 1)
+            while (role != 0 && role != 1)
+            {
+                gotoXY(92, 31);
+
+                cin >> role;
+            }
+
+            roles[i] = (role == 0) ? "0" : "1"; // Cập nhật vai trò của tài khoản
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        gotoXY(48, 33);
+        cout << "[Tài khoản không tồn tại]" << endl;
+        return;
+    }
+
+    // Ghi lại các tài khoản với vai trò mới vào file
+    ofstream outFile("dangnhap.txt");
+    if (!outFile)
+    {
+        cout << "Không thể mở file dangnhap.txt để ghi!" << endl;
+        return;
+    }
+
+    outFile << totalAccounts << endl;
+    for (int i = 0; i < totalAccounts; ++i)
+    {
+        outFile << usernames[i] << " " << passwords[i] << " " << roles[i] << endl;
+    }
+    outFile.close();
+
+    gotoXY(48, 33);
+    if (MessageBoxW(NULL, L"Quyền của tài khoản đã được thay đổi thành công!", L"Thông báo", MB_OK | MB_ICONINFORMATION) == IDOK)
+    {
+        return;
+    }
+}
+
 // =====================================
 bool TD(int a, int b)
 {
@@ -1239,6 +1559,8 @@ bool Menu::UpdateBook()
         if (122 <= xc && xc <= 148 && 0 <= yc && yc <= 3)
         {
             this->ShowAllBook();
+            while (_kbhit())
+                _getch(); // Xóa phím dư trong buffer
         }
         menuTable(2 + 120, 2 - 1, 25, 2);
         writeString(125, 2, L"Xem thông tin sách", 0x74);
@@ -1305,14 +1627,14 @@ bool Menu::UpdateBook()
 
                 gotoXY(x + 30, y + 12);
                 new_TenSach = getinput(); // Dùng getline để nhập tên sách, có thể chứa khoảng trắng
-                if (new_TenSach.length() >= 4 && isAlphaString(new_TenSach))
+                if (new_TenSach.length() >= 4 && !isNumeric(new_TenSach))
                 {
                     break;
                 }
                 else
                 {
                     gotoXY(x + 30, y + 12);
-                    cout << string(15, ' '); // Xóa nội dung cũ
+                    cout << string(10, ' '); // Xóa nội dung cũ
                     trolaisua(x + 30, y + 12, new_TenSach);
                 }
             }
@@ -1330,14 +1652,14 @@ bool Menu::UpdateBook()
 
                 gotoXY(x + 60, y + 12);
                 new_TheLoai = getinput(); // Dùng getline để nhập thể loại
-                if (new_TheLoai.length() >= 3 && isAlphaString(new_TheLoai))
+                if (new_TheLoai.length() >= 3 && !isNumeric(new_TheLoai))
                 {
                     break;
                 }
                 else
                 {
                     gotoXY(x + 60, y + 4);
-                    cout << string(15, ' '); // Xóa nội dung cũ
+                    cout << string(10, ' '); // Xóa nội dung cũ
                     trolaisua(x + 60, y + 4, new_TheLoai);
                 }
             }
@@ -1355,14 +1677,14 @@ bool Menu::UpdateBook()
 
                 gotoXY(x + 85, y + 12);
                 new_TacGia = getinput(); // Dùng getline để nhập tên tác giả
-                if (new_TacGia.length() >= 4 && isAlphaString(new_TacGia))
+                if (new_TacGia.length() >= 4 && !isNumeric(new_TacGia))
                 {
                     break;
                 }
                 else
                 {
                     gotoXY(x + 85, y + 12);
-                    cout << string(15, ' '); // Xóa nội dung cũ
+                    cout << string(10, ' '); // Xóa nội dung cũ
                     trolaisua(x + 85, y + 12, new_TacGia);
                 }
             }
@@ -1389,7 +1711,7 @@ bool Menu::UpdateBook()
                 else
                 {
                     gotoXY(x + 104, y + 4);
-                    cout << string(15, ' '); // Xóa nội dung cũ
+                    cout << string(10, ' '); // Xóa nội dung cũ
                     trolaisua(x + 104, y + 4, nam_xuat_ban);
                 }
             }
@@ -1418,7 +1740,7 @@ bool Menu::UpdateBook()
                 else
                 {
                     gotoXY(x + 125, y + 12);
-                    cout << string(15, ' '); // Xóa nội dung cũ
+                    cout << string(10, ' '); // Xóa nội dung cũ
                     trolaisua(x + 125, y + 12, quantity);
                 }
             }
@@ -1447,7 +1769,7 @@ bool Menu::UpdateBook()
                 else
                 {
                     gotoXY(x + 136, y + 12);
-                    cout << string(15, ' '); // Xóa nội dung cũ
+                    cout << string(10, ' '); // Xóa nội dung cũ
                     trolaisua(x + 136, y + 12, price);
                 }
             }
@@ -1628,6 +1950,8 @@ bool Menu::DeleteBook()
     if (122 <= xc && xc <= 148 && 0 <= yc && yc <= 3)
     {
         this->ShowAllBook();
+        while (_kbhit())
+            _getch(); // Xóa phím dư trong buffer
     }
     while (true)
     {
@@ -1639,6 +1963,8 @@ bool Menu::DeleteBook()
         if (122 <= xc && xc <= 148 && 0 <= yc && yc <= 3)
         {
             this->ShowAllBook();
+            while (_kbhit())
+                _getch(); // Xóa phím dư trong buffer
         }
         menuTable(2 + 120, 2 - 1, 25, 2);
         writeString(125, 2, L"Xem thông tin sách", 0x74);
@@ -1760,7 +2086,7 @@ void Menu::statistical()
     int total_revenue = 0;
     int count_books = 0;
     int total_invoices = 0; // Total number of invoices
-    int sum_productsdetail, sum_capitaldetail , count_invoices_detail;
+    int sum_productsdetail, sum_capitaldetail, count_invoices_detail, num_customers_detail;
     int count;
     string maHoaDonArr[1000], makhachhangArr[1000], ngayLapArr[1000];
     int soLuongArr[1000], tongTienArr[1000];
@@ -1819,7 +2145,7 @@ void Menu::statistical()
 
         writeString(x + 2, y + 7, L"Vốn nhập hàng:", 0x70);
         gotoXY(x + 16, y + 7);
-        cout << sum_capital;
+        cout << sum_capital << " VND";
 
         writeString(x + 2, y + 9, L"Tổng số khách hàng mua hàng:", 0x70);
         gotoXY(x + 30, y + 9);
@@ -1831,8 +2157,7 @@ void Menu::statistical()
 
         writeString(x + 2, y + 13, L"Tổng tiền thu được:", 0x70);
         gotoXY(x + 25, y + 13);
-        cout << total_revenue;
-
+        cout << total_revenue << " VND";
         writeString(x + 2, y + 18, selectedOption == 0 ? L"[ CHI TIẾT ]" : L"  CHI TIẾT  ", 0x70);
         writeString(x + 30, y + 18, selectedOption == 1 ? L"[ TRO VE ]" : L"  TRO VE  ", 0x70);
         key = batphim();
@@ -1901,7 +2226,11 @@ void Menu::statistical()
 
                         bool dataFound = false;
                         sum_productsdetail = 0, sum_capitaldetail = 0, count_invoices_detail = 0;
-                        int count = 0;
+                        count = 0;
+                        num_customers_detail = 0;
+                        string prevCustomerCode[1000]; // Array to store customer codes
+                        int prevCustomerCount = 0;     // To track the number of unique customer codes
+
                         for (int i = 1; i <= n; ++i)
                         {
                             string maHoaDon, ngayLap, makhachhang;
@@ -1928,6 +2257,26 @@ void Menu::statistical()
                                 sum_capitaldetail += tongTien;
                                 count_invoices_detail++;
                                 count++;
+
+                                // Check if the customer code has changed
+                                bool customerExists = false;
+                                for (int j = 0; j < prevCustomerCount; ++j)
+                                {
+                                    if (prevCustomerCode[j] == makhachhang)
+                                    {
+                                        customerExists = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!customerExists)
+                                {
+                                    // Customer code not found in the array, so increment and add to the array
+                                    prevCustomerCode[prevCustomerCount] = makhachhang;
+                                    prevCustomerCount++;
+                                    num_customers_detail++;
+                                }
+
                                 dataFound = true;
                             }
                         }
@@ -1948,18 +2297,25 @@ void Menu::statistical()
                     {
                         system("cls");
                         menuTable(x, y - 3, 60, 2);
-                        writeString(x + 15, y - 2, L"[THỐNG KÊ CHI TIẾT TRONG THÁNG]", 0x70);
-                        menuTable(x, y, 60, 15);
-                        writeString(x + 2, y + 4, L"Tổng số lượng sách đã bán:", 0x70);
-                        gotoXY(x + 30, y + 4);
+                        writeString(x + 15, y - 2, L"[THỐNG KÊ CHI TIẾT TRONG THÁNG ", 0x70);
+                        gotoXY(x + 47, y - 2);
+                        cout << month << "]";
+                        menuTable(x, y, 60, 20);
+                        writeString(x + 2, y + 2, L"Tổng số lượng sách đã bán:", 0x70);
+                        gotoXY(x + 40, y + 2);
                         cout << sum_productsdetail;
-                        writeString(x + 2, y + 6, L"Doanh thu trong tháng:", 0x70);
-                        gotoXY(x + 40, y + 6);
-                        cout << sum_capitaldetail << " VND";
-                        writeString(x + 2, y + 8, L"Tổng số hóa đơn:", 0x70);
-                        gotoXY(x + 30, y + 8);
+
+                        writeString(x + 2, y + 5, L"Tổng số khách hàng mua hàng:", 0x70);
+                        gotoXY(x + 30, y + 5);
+                        cout << num_customers_detail;
+
+                        writeString(x + 2, y + 7, L"Tổng số hóa đơn:", 0x70);
+                        gotoXY(x + 25, y + 7);
                         cout << count_invoices_detail;
 
+                        writeString(x + 2, y + 9, L"Doanh thu trong tháng:", 0x70);
+                        gotoXY(x + 30, y + 9);
+                        cout << sum_capitaldetail << " VND";
                         writeString(x + 2, y + 18, Sub_selectedOption == 0 ? L"[ CHI TIẾT ]" : L"  CHI TIẾT  ", 0x70);
                         writeString(x + 30, y + 18, Sub_selectedOption == 1 ? L"[ TRO VE ]" : L"  TRO VE  ", 0x70);
 
@@ -1982,6 +2338,8 @@ void Menu::statistical()
                         {
                             if (Sub_selectedOption == 0)
                             {
+                                // cout << count;
+                                // system("pause");
                                 displayInvoice(count, maHoaDonArr, makhachhangArr, ngayLapArr, soLuongArr, tongTienArr);
                             }
                             else if (Sub_selectedOption == 1)

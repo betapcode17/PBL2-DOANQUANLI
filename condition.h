@@ -5,26 +5,31 @@
 #include <string.h>
 #include <windows.h>
 #include "HeThong.h"
+#include <io.h>    // For _setmode
+#include <fcntl.h> // For _O_U16TEXT
 using namespace std;
+
 inline string getinput()
 {
     string name;
     char ch;
     while ((ch = _getch()) != '\r')
-    { // Đọc cho đến khi nhấn Enter ('\r')
+    {
         if (ch == '\b' && name.length() > 0)
-        { // Xử lý phím Backspace
-            wcout << "\b \b";
+        {
+            cout << "\b \b";
             name.pop_back();
         }
         else if (ch != '\b')
-        {                // Nếu không phải Backspace, thêm vào mật khẩu
-            wcout << ch; // Hiển thị * thay vì ký tự thực
+        {
+
+            cout << ch;
             name.push_back(ch);
         }
     }
     return name;
 }
+
 inline string getNumericInput()
 {
     string number;
@@ -55,12 +60,14 @@ inline bool isNumeric(const string &str)
     return true;
 }
 // hàm kiểm tra có phải là chuỗi hay không?
-inline bool isAlphaString(const string &str)
+inline bool isAlphaString(const std::string &str)
 {
+    std::locale loc;
     for (char const &c : str)
     {
-        if (!isalpha(c) && !isspace(c))
-        { // Kiểm tra nếu không phải chữ cái hoặc khoảng trắng
+        // Kiểm tra nếu không phải chữ cái (bao gồm dấu) hoặc khoảng trắng
+        if (!std::isalpha(c, loc) && !std::isspace(c, loc))
+        {
             return false;
         }
     }
@@ -260,4 +267,32 @@ inline int chuantime(int ngay, int thang, int nam)
         else
             return 0;
     }
+}
+inline bool isPasswordValid(const wstring &password)
+{
+    if (password.length() < 4)
+    {
+        return false;
+    }
+
+    bool hasUpperCase = false;
+    bool hasLowerCase = false;
+    bool hasDigit = false;
+
+    for (char ch : password)
+    {
+        if (isupper(ch))
+        {
+            hasUpperCase = true;
+        }
+        else if (islower(ch))
+        {
+            hasLowerCase = true;
+        }
+        else if (isdigit(ch))
+        {
+            hasDigit = true;
+        }
+    }
+    return hasUpperCase && hasLowerCase && hasDigit;
 }

@@ -15,10 +15,11 @@ using namespace std;
 #include <iostream>
 #include <conio.h>
 #include <string>
-
+#include <vector>
+#include "condition.h"
 using namespace std;
 
-wstring Users::getPassword()
+wstring Users::getPassword(int x, int y)
 {
     wstring password;
     char ch;
@@ -41,12 +42,12 @@ wstring Users::getPassword()
             wcout << "\r                          \r";
             if (showPassword)
             {
-                gotoXY(46, 16);
+                gotoXY(x, y);
                 wcout << password;
             }
             else
             {
-                gotoXY(46, 16);
+                gotoXY(x, y);
                 wcout << wstring(password.length(), '*');
             }
         }
@@ -147,7 +148,7 @@ bool Users::login()
             if (x >= 45 && x <= 75 && y >= 15 && y <= 18)
             {
                 gotoXY(46, 16);
-                password = getPassword();
+                password = getPassword(46, 16);
                 break;
             }
             if (x >= 59 && x <= 75 && y == 23)
@@ -220,97 +221,105 @@ void Users::forgot_password()
     setTextColor(11);
     _setmode(_fileno(stdout), _O_U16TEXT);
     SetConsoleBackgroundToGray();
-    menuTable(45, 10, 40, 3);
-    writeString(46, 11, L"Nhap ten dang nhap: ", 0x70);
+    display_forgetPassword();
     wstring username_input;
-    while (true)
-    {
-        getline(wcin, username_input);
+    bool username_found = false;
+    int index;
+    // Lấy dữ liệu từ file
+    vector<wstring> usernames, passwords;
+    vector<int> roles;
+    wstring line;
 
-        if (!username_input.empty())
-        {
-            break;
-        }
-    }
-    wfstream infile("dangnhap.txt");
-    if (!infile.is_open())
+    // Mở file và tải dữ liệu
+    wifstream infile("dangnhap.txt");
+    infile.imbue(locale(""));
+
+    if (!infile)
     {
-        menuTable(53, 10, 70, 4);
-        writeString(57, 12, L"KHÔNG THỂ MỞ TỆP TIN.", 0x70);
-        if (_getch())
-            system("cls");
-        return;
-    }
-    int n;
-    infile >> n;
-    infile.ignore();
-    wfstream tempFile("temp.txt", ios::out);
-    if (!tempFile.is_open())
-    {
-        menuTable(53, 10, 70, 4);
-        writeString(57, 12, L"KHÔNG THỂ TẠO TỆP TẠM THỜI.", 0x70);
-        if (_getch())
-            system("cls");
+        writeString(46, 13, L"KHÔNG THỂ MỞ TỆP TIN!", 0x70);
+        _getch();
         return;
     }
 
-    tempFile << n << endl; // Write the number of accounts first
-
-    bool account_found = false;
-
-    for (int i = 1; i <= n; i++)
+    while (getline(infile, line))
     {
-        wstring file_username;
-        int file_password, field1; // Additional fields (e.g., role or flag)
-        infile >> file_username >> file_password >> field1;
-        if (username_input == file_username)
+        wistringstream iss(line);
+        wstring username, password;
+        int role;
+        if (iss >> username >> password >> role)
         {
-            account_found = true;
-            menuTable(45, 14, 40, 3);
-            writeChar(46, 15, L"Nhap mat khau moi: ");
-            int new_password;
-            wcin >> new_password;
-            tempFile << file_username << L" " << new_password << L" " << field1 << endl;
-            writeChar(45, 18, L"Cap nhat mat khau thanh cong!");
-        }
-        else
-        {
-            tempFile << file_username << L" " << file_password << L" " << field1 << endl;
+            usernames.push_back(username);
+            passwords.push_back(password);
+            roles.push_back(role);
         }
     }
     infile.close();
-    tempFile.close();
-    if (account_found)
+
+    // Vòng lặp để nhập tài khoản
+    do
     {
-        _wremove(L"dangnhap.txt");              // Remove old file
-        _wrename(L"temp.txt", L"dangnhap.txt"); // Rename temp file to original file name
-        while (true)
+        // Nhập tên đăng nhập
+        gotoXY(46, 11);
+        getline(wcin, username_input);
+
+        // Kiểm tra tài khoản
+        auto it = find(usernames.begin(), usernames.end(), username_input);
+        if (it == usernames.end())
         {
-            if (setKeyBoard() == 5)
-            {
-                system("cls");
-                break;
-            }
-            // display_login();
-            // login();
+            writeString(47, 13, L"[ Tài khoản không tồn tại ]", 0x74);
         }
+        else
+        {
+            username_found = true;
+            index = distance(usernames.begin(), it);
+            writeString(47, 13, L"[Tài khoản hợp lệ!]", 0x72);
+        }
+
+    } while (!username_found);
+    wstring new_password;
+    gotoXY(46, 16);
+    new_password = getPassword(46, 16);
+    while (!isPasswordValid(new_password))
+    {
+        writeString(46, 18, L"[ Mật khẩu không hợp lệ ]", 0x74);
+        gotoXY(46, 16);
+        wcout << wstring(15, L' ');
+        gotoXY(46, 16);
+        new_password = getPassword(46, 16);
     }
-    else
+    // Password input again
+    gotoXY(46, 21);
+    wstring new_password_again;
+    new_password_again = getPassword(46, 21);
+    while (new_password != new_password_again)
     {
-        writeString(45, 8, L"Khong ton tai tai khoan nay!!!", 0x70);
-        _wremove(L"temp.txt");
-        while (true)
-        {
-            if (setKeyBoard() == 5)
-            {
-                system("cls");
-                break;
-            }
-            // display_login();
-            // login();
-        }
+        writeString(46, 23, L"[ Mật khẩu không trùng khớp ]", 0x74);
+        gotoXY(46, 21);
+        wcout << wstring(15, L' ');
+        gotoXY(46, 21);
+        new_password_again = getPassword(46, 21);
+    }
+    passwords[index] = new_password;
+    // Ghi lại file
+    wofstream outfile("dangnhap.txt");
+    outfile.imbue(locale(""));
+
+    // Ghi số lượng tài khoản
+    outfile << usernames.size() << L"\n";
+
+    // Ghi dữ liệu từng tài khoản
+    for (size_t i = 0; i < usernames.size(); ++i)
+    {
+        outfile << usernames[i] << L" " << passwords[i] << L" " << roles[i] << L"\n";
+    }
+    outfile.close();
+
+    if (MessageBoxW(NULL, L"Cập nhật mật khẩu thành công!", L"Thông báo", MB_OK | MB_ICONINFORMATION) == IDOK)
+    {
+        return; // Exit the function when "OK" is clicked
     }
 }
+
 void Users::register_account()
 {
 
@@ -321,20 +330,15 @@ void Users::register_account()
     // Check for account count in file
     // Display title
     SetConsoleBackgroundToGray();
-    writeString(50, 8, L"THÊM TÀI KHOẢN ĐĂNG NHẬP", 0x70);
-    menuTable(45, 12, 40, 2);
-    writeString(46, 13, L"NHẬP TÊN ĐĂNG NHẬP MỚI : ", 0x70);
-    // Input field for username
-    menuTable(45, 16, 40, 2);
-    writeString(46, 17, L"NHẬP PASSWORD : ", 0x70);
+    display_register();
     // Validate and input username
     wstring username_input;
     bool valid_username = false;
     while (!valid_username)
     {
-        gotoXY(70, 13);
+        gotoXY(46, 11);
         wcout << wstring(15, L' ');
-        gotoXY(70, 13);
+        gotoXY(46, 11);
         getline(wcin, username_input);
 
         // Remove extra whitespace
@@ -342,7 +346,7 @@ void Users::register_account()
 
         if (username_input.empty())
         {
-            writeString(50, 24, L"TÊN ĐĂNG NHẬP KHÔNG ĐƯỢC ĐỂ TRỐNG. VUI LÒNG THỬ LẠI.", 0x70);
+            writeString(44, 13, L"[ TÊN ĐĂNG NHẬP KHÔNG ĐƯỢC ĐỂ TRỐNG ]", 0x70);
             continue;
         }
 
@@ -376,7 +380,7 @@ void Users::register_account()
 
         if (account_exists)
         {
-            writeString(40, 15, L"[TÊN ĐĂNG NHẬP ĐÃ TỒN TẠI. VUI LÒNG CHỌN TÊN KHÁC]", 0x70);
+            writeString(46, 13, L"[ Tên đăng nhập đã tồn tại ]", 0x74);
         }
         else
         {
@@ -385,31 +389,30 @@ void Users::register_account()
     }
 
     // Password input
-    gotoXY(64, 17);
+    gotoXY(46, 16);
     wstring password_input;
-
-    getline(wcin, password_input);
-
-    // Role input with validation
+    password_input = getPassword(46, 16);
     int Role = 0;
-    // bool valid_role = false;
-    // while (!valid_role)
-    // {
-    //     gotoXY(80, 21);
-    //     wcout << wstring(15, L' ');
-    //     gotoXY(80, 21);
-    //     wcin >> Role;
-
-    //     if (Role == 0 || Role == 1)
-    //     {
-    //         valid_role = true;
-    //     }
-    //     else
-    //     {
-    //         writeString(40, 19, L"[VAI TRÒ KHÔNG HỢP LỆ. VUI LÒNG NHẬP LẠI (ADMIN-0, USER-1)]");
-    //         wcin.ignore(numeric_limits<streamsize>::max(), '\n');
-    //     }
-    // }
+    while (!isPasswordValid(password_input))
+    {
+        writeString(46, 18, L"[ Mật khẩu không hợp lệ ]", 0x74);
+        gotoXY(46, 16);
+        wcout << wstring(15, L' ');
+        gotoXY(46, 16);
+        password_input = getPassword(46, 16);
+    }
+    // Password input again
+    gotoXY(46, 21);
+    wstring password_input_again;
+    password_input_again = getPassword(46, 21);
+    while (password_input != password_input_again)
+    {
+        writeString(46, 23, L"[ Mật khẩu không trùng khớp ]", 0x74);
+        gotoXY(46, 21);
+        wcout << wstring(15, L' ');
+        gotoXY(46, 21);
+        password_input_again = getPassword(46, 21);
+    }
     wofstream account_file("dangnhap.txt", ios::app);
     if (!account_file.is_open())
     {
@@ -435,7 +438,7 @@ void Users::register_account()
         std::cerr << "File could not be opened for writing!" << std::endl;
         return;
     }
-    outfile << n << "\n";
+    outfile << n;
     outfile.seekp(0, std::ios::end);
     outfile.close();
     // Success message

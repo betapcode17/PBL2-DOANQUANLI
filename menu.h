@@ -9,6 +9,7 @@ public:
     void Start();
     void ShowAllCus();
     void ShowAllBook();
+
     void ShowSortedBooks(int, BookNode *);
     void Sort_BookUporDown(int i, int t);
     BookNode *filterBooks(string, int);
@@ -18,4 +19,7 @@ public:
     bool CreateBook();
     void statistical();
     void DeleteBookFromFile(const std::string &bookID);
+    void ShowAllAccount();
+    void DeleteAccount();
+    void ChangeRole();
 };

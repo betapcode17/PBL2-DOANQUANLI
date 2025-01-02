@@ -51,7 +51,7 @@ int Book::getGia_ban() const
 }
 void Book::SetMa_Sach(string newMa_Sach)
 {
-     this->Ma_Sach = newMa_Sach;
+    this->Ma_Sach = newMa_Sach;
 }
 void Book::SetTen_sach(string newTen_sach)
 {

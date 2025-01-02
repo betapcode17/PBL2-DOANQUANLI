@@ -8,7 +8,7 @@ private:
 
 public:
     wstring getName();
-    wstring getPassword();
+    wstring getPassword(int x, int y);
     int getRole() const
     {
         return role;

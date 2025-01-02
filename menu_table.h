@@ -6,62 +6,68 @@
 using namespace std;
 
 // --- Variables ---
-wstring menu[] = {
+inline wstring menu[] = {
     L"1> Quản lý sản phẩm",
     L"2> Quản lý khách hàng",
     L"3> Thống kê",
-    L"4> Thông tin",
+    L"4> Quản lí tài khoản",
     L"5> Thoát"};
-int menuSize = sizeof(menu) / sizeof(menu[0]);
+inline int menuSize = sizeof(menu) / sizeof(menu[0]);
 
-wstring menuUser[] = {
+inline wstring menuUser[] = {
     L"1> Xem thông tin sản phẩm",
     L"2> Xem thông tin khách hàng",
     L"3> Order",
     L"4> Thông tin",
     L"5> Thoát"};
-int menuUserSize = sizeof(menuUser) / sizeof(menuUser[0]);
+inline int menuUserSize = sizeof(menuUser) / sizeof(menuUser[0]);
 
-wstring menuCRUD[] = {
+inline wstring menuCRUD[] = {
     L"1> Xem thông tin của sách",
     L"2> Thêm sách mới",
     L"3> Xóa sách",
     L"4> Cập nhật sách",
     L"5> Thoát"};
-int menuCRUDSize = sizeof(menuCRUD) / sizeof(menuCRUD[0]);
+inline int menuCRUDSize = sizeof(menuCRUD) / sizeof(menuCRUD[0]);
 
-wstring menuRead[] = {
+inline wstring menuRead[] = {
     L"1> Thông tin toàn bộ sách trong cửa hàng",
     L"2> Tìm kiếm thông tin sách",
     L"3> Sắp xếp thông tin sách",
     L"4> Thoát"};
-int menuReadSize = sizeof(menuRead) / sizeof(menuRead[0]);
+inline int menuReadSize = sizeof(menuRead) / sizeof(menuRead[0]);
 
-wstring menuSearch[] = {
+inline wstring menuSearch[] = {
     L"1> Tìm kiếm sách theo tên sách",
     L"2> Tìm kiếm sách theo thể loại",
     L"3> Tìm kiếm sách theo tác giả",
     L"4> Tìm kiếm sách theo năm xuất bản",
     L"5> Thoát"};
-int menuSearchSize = sizeof(menuSearch) / sizeof(menuSearch[0]);
+inline int menuSearchSize = sizeof(menuSearch) / sizeof(menuSearch[0]);
 
-wstring menuSort[] = {
+inline wstring menuSort[] = {
     L"1> Sắp xếp sách theo số lượng",
     L"2> Sắp xếp sách theo số tiền",
     L"3> Sắp xếp sách theo năm xuất bản",
     L"4> Thoát"};
-int menuSortSize = sizeof(menuSort) / sizeof(menuSort[0]);
+inline int menuSortSize = sizeof(menuSort) / sizeof(menuSort[0]);
 
-wstring menuSortUpandDown[] = {
+inline wstring menuSortUpandDown[] = {
     L"1> Sắp xếp tăng dần",
     L"2> Sắp xếp giảm dần",
     L"3> Thoát"};
-int menuUpandDownSize = sizeof(menuSortUpandDown) / sizeof(menuSortUpandDown[0]);
+inline int menuUpandDownSize = sizeof(menuSortUpandDown) / sizeof(menuSortUpandDown[0]);
 
-wstring menuKhachHang[] = {
+inline wstring menuKhachHang[] = {
     L"1> Thông tin khách hàng đã mua",
     L"2> Thêm khách hàng mới"};
-int menuKhachHang = sizeof(menuKhachHang) / sizeof(menuKhachHang[0]);
+inline int menuKhachHangSize = sizeof(menuKhachHang) / sizeof(menuKhachHang[0]);
+inline wstring menuAccount[] = {
+    L"1> Xem toàn bộ tài khoản",
+    L"2> Xóa tài khoản",
+    L"3> Thay đổi quyền",
+};
+inline int menuAccountSize = sizeof(menuAccount) / sizeof(menuAccount[0]);
 inline void thanh_sang(int x, int y, int w, int h, int b_color, wstring menuItems[], int currentItem, bool highlight)
 {
     SetConsoleOutputCP(CP_UTF8);
@@ -101,6 +107,8 @@ inline int MENU(wstring menuItems[], int menuSize, int x, int y, int w, int h, i
     gotoXY(boxX + 14, boxY - 2);
     if (i == 1)
         wcout << "MENU ADMIN";
+    else if (i == 2)
+        wcout << "Customer Selection";
     else
         wcout << "MENU USER";
     menuTable(boxX, boxY, boxW, menuSize * 3 + 4);

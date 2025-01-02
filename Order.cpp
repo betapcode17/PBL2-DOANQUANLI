@@ -1,4 +1,5 @@
 #include "HeThong.h"
+#include "menu_table.h"
 #include "Order.h"
 #include "condition.h"
 #include <algorithm> // For std::all_of
@@ -392,153 +393,303 @@ void Order::bill()
     string billDay, cusCode, newNameCus, newCusAddress, newCusSdt, newCusCode;
     int day, month, year;
     int sum = 0;
-    // Input
-    writeString(x + 6, y, L"[Nhập thông tin hóa đơn]", 0x74);
-    menuTable(x, y + 1, 45, 25);
-    // Input for bill details
-    writeString(x + 6, y + 2, L"[ Nhập ngày lập hóa đơn ]", 0x71);
-    menuTable(x + 6, y + 3, 30, 2);
-    writeString(x + 6, y + 7, L"[ Nhập tên khách hàng ]", 0x71);
-    menuTable(x + 6, y + 8, 30, 2);
-    writeString(x + 6, y + 12, L"[ Nhập địa chỉ khách hàng ]", 0x71);
-    menuTable(x + 6, y + 13, 30, 2);
-    writeString(x + 6, y + 17, L"[ Nhập số điện thoại khách hàng ]", 0x71);
-    menuTable(x + 6, y + 18, 30, 2);
-
-    // Validate bill day
-    bool validDate = false;
-    while (!validDate)
+    //
+    int choice = MENU(menuKhachHang, menuKhachHangSize, 41, 9, 30, 2, 40, 7, 40, 2);
+    if (choice == 0)
     {
-        gotoXY(x + 7, y + 4);
-        getline(cin, billDay);
-
-        if (sscanf(billDay.c_str(), "%d/%d/%d", &day, &month, &year) == 3 && chuantime(day, month, year))
+        system("cls");
+        SetConsoleBackgroundToGray();
+        HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(consoleHandle, 0x70);
+        int position, xc, yc;
+        while (true)
         {
-            validDate = true;
-        }
-        else
-        {
-            gotoXY(x + 7, y + 6);
-            trolaisua(x + 7, y + 4, billDay);
-        }
-    }
-    billDay = formatDate(billDay);
-
-    // Validate customer name
-    while (true)
-    {
-        gotoXY(x + 7, y + 9);
-        getline(cin, newNameCus);
-        if (isAlphaString(newNameCus))
-            break;
-        else
-            trolaisua(x + 7, y + 9, newNameCus);
-    }
-
-    // Validate customer address
-    while (true)
-    {
-        gotoXY(x + 7, y + 14);
-        getline(cin, newCusAddress);
-        if (isAlphaString(newCusAddress))
-            break;
-        else
-            trolaisua(x + 7, y + 14, newCusAddress);
-    }
-
-    // Validate customer phone number
-    while (true)
-    {
-        gotoXY(x + 7, y + 19);
-        getline(cin, newCusSdt);
-        if (isPhoneNumber(newCusSdt))
-            break;
-        else
-            trolaisua(x + 7, y + 19, newCusSdt);
-    }
-
-    // Calculate the total sum of the order
-    sum = this->Calculator();
-    // Generate a new customer code
-    CustomerNode *cus = this->customerHead;
-    bool customerExists = false;
-
-    // Check if customer already exists
-    while (cus != NULL)
-    {
-        if (cus->data.getSdtKH() == newCusSdt && cus->data.getDia_chi() == newCusAddress && cus->data.getSdtKH() == newCusSdt)
-        {
-            // Customer exists, add sum to existing customer's amount
-            cus->data.setSTDM(cus->data.getSo_tien_da_mua() + sum);
-            customerExists = true;
-            break;
-        }
-        cus = cus->next;
-    }
-
-    if (!customerExists)
-    {
-        // Generate a new customer code
-        cus = this->customerHead;
-        std::string cusCode;
-        while (cus != NULL)
-        {
-            cusCode = cus->data.getMaKH();
-            cus = cus->next;
+            menuTable(2 + 120, 2 - 1, 25, 2);
+            writeString(123, 2, L"Xem thông tin khách hàng", 0x74);
+            const wchar_t *name = L"[ Nhập Mã khách hàng]";
+            writeString(4, 2, name, 0x74);
+            menuTable(27, 1, 30, 2);
+            setClick(xc, yc);
+            if (122 <= xc && xc <= 148 && 0 <= yc && yc <= 3)
+            {
+                this->ShowAllCus();
+                while (_kbhit())
+                    _getch(); // Xóa phím dư trong buffer
+            }
+            menuTable(2 + 120, 2 - 1, 25, 2);
+            writeString(123, 2, L"Xem thông tin khách hàng", 0x74);
+            writeString(4, 2, name, 0x74);
+            menuTable(27, 1, 30, 2);
+            gotoXY(28, 2);
+            string searchmacus = getinput();
+            position = this->find_NodeCustomer(searchmacus); // Tìm vị trí sách bằng cách tìm mã sách
+            if (position == -1)
+            {
+                writeString(27, 4, L"Không tồn tại khách hàng có mã như trên.", 0x74);
+                gotoXY(28, 2);
+                cout << string(10, ' ');
+            }
+            else
+            {
+                break;
+            }
         }
 
-        if (cusCode.length() > 2 && std::all_of(cusCode.begin() + 2, cusCode.end(), ::isdigit))
+        Customer *update = getNodeCustomer(position);
+        bangkhanhhang(3, 10, 2);
+        xc = 4, yc = 10;
+        writeString(xc + 1, yc - 2, L"[ THÔNG TIN KHÁCH HÀNG ]", 0x74);
+        gotoXY(xc + 10, yc + 3);
+        cout << update->getMaKH();
+        cusCode = update->getMaKH();
+        gotoXY(xc + 30, yc + 3);
+        cout << update->getHoTen();
+        newNameCus = update->getMaKH();
+        gotoXY(xc + 60, yc + 3);
+        cout << update->getDia_chi();
+        newCusAddress = update->getDia_chi();
+        gotoXY(xc + 85, yc + 3);
+        cout << update->getSdtKH();
+        newCusSdt = update->getSdtKH();
+        gotoXY(xc + 104, yc + 3);
+        cout << update->getSo_tien_da_mua();
+        sum = this->Calculator();
+        update->setSTDM(sum + update->getSo_tien_da_mua());
+        writeString(4, 5, L"[ Nhập ngày lập hóa đơn ]", 0x71);
+        menuTable(30, 4, 30, 2);
+        bool validDate = false;
+        while (!validDate)
         {
-            int numberPart = std::stoi(cusCode.substr(2)) + 1;
-            cusCode = "KH" + std::to_string(numberPart).insert(0, 3 - std::to_string(numberPart).length(), '0');
+            gotoXY(35, 5);
+            billDay = getinput();
+            if (sscanf(billDay.c_str(), "%d/%d/%d", &day, &month, &year) == 3 && chuantime(day, month, year))
+            {
+                validDate = true;
+            }
+            else
+            {
+                gotoXY(35, 4);
+                trolaisua(35, 4, billDay);
+            }
         }
-        else
-        {
-            cusCode = "KH001"; // Default customer code
-        }
-
-        // Create and add a new customer
-        Customer newCus(cusCode, newNameCus, newCusAddress, newCusSdt, sum);
-        this->Add_Customer(newCus);
-        newCusCode = cusCode;
+        billDay = formatDate(billDay);
         std::ifstream infile("customers.txt");
         if (!infile)
         {
-            std::cerr << "File could not be opened!" << std::endl;
+            std::cerr << "File could not be opened for reading!" << std::endl;
             return;
         }
 
-        int n;
-        infile >> n;
-        infile.ignore();
-        n += 1;
-        std::ofstream outfile("customers.txt", std::ios::in);
+        std::ostringstream buffer; // Bộ đệm tạm thời để lưu nội dung file đã sửa
+        std::string line;
+        bool found = false;
+
+        // Đọc dòng đầu tiên (số lượng khách hàng)
+        int n = 0;
+        if (std::getline(infile, line))
+        {
+            n = std::stoi(line);
+            buffer << n << "\n"; // Ghi lại số lượng khách hàng vào bộ đệm
+        }
+
+        // Duyệt qua từng dòng để tìm cusCode
+        while (std::getline(infile, line))
+        {
+            std::istringstream recordStream(line);
+            std::string code;
+            if (std::getline(recordStream, code, '|'))
+            {
+                if (code == cusCode)
+                {
+                    // Nếu tìm thấy cusCode, cập nhật thông tin
+                    found = true;
+                    buffer << cusCode << "|" << newNameCus << "|" << newCusAddress << "|"
+                           << newCusSdt << "|" << sum + update->getSo_tien_da_mua() << "\n";
+                }
+                else
+                {
+                    // Nếu không khớp, ghi lại dòng cũ
+                    buffer << line << "\n";
+                }
+            }
+        }
+        infile.close();
+
+        // Nếu không tìm thấy mã khách hàng
+        if (!found)
+        {
+            std::cerr << "Customer code not found: " << cusCode << std::endl;
+            return;
+        }
+
+        // Ghi nội dung từ bộ đệm trở lại file
+        std::ofstream outfile("customers.txt");
         if (!outfile)
         {
             std::cerr << "File could not be opened for writing!" << std::endl;
             return;
         }
-        outfile << n << "\n";
-        outfile.seekp(0, std::ios::end);
-        for (int i = 0; i < types; i++)
-        {
-            outfile << "\n"
-                    << cusCode << "|" << newNameCus << "|" << newCusAddress << "|" << newCusSdt
-                    << "|" << sum;
-        }
+        outfile << buffer.str(); // Ghi nội dung từ bộ đệm vào file
         outfile.close();
-        // Read the number of records
+        std::cout << "Customer information updated successfully.\n";
+    }
+    //
+    // Input
+    else
+    {
+        system("cls");
+        SetConsoleBackgroundToGray();
+        HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        SetConsoleTextAttribute(consoleHandle, 0x70);
+        writeString(x + 6, y, L"[Nhập thông tin hóa đơn]", 0x74);
+        menuTable(x, y + 1, 45, 25);
+        // Input for bill details
+        writeString(x + 6, y + 2, L"[ Nhập ngày lập hóa đơn ]", 0x71);
+        menuTable(x + 6, y + 3, 30, 2);
+        writeString(x + 6, y + 7, L"[ Nhập tên khách hàng ]", 0x71);
+        menuTable(x + 6, y + 8, 30, 2);
+        writeString(x + 6, y + 12, L"[ Nhập địa chỉ khách hàng ]", 0x71);
+        menuTable(x + 6, y + 13, 30, 2);
+        writeString(x + 6, y + 17, L"[ Nhập số điện thoại khách hàng ]", 0x71);
+        menuTable(x + 6, y + 18, 30, 2);
+
+        // Validate bill day
+        bool validDate = false;
+        while (!validDate)
+        {
+            gotoXY(x + 7, y + 4);
+            getline(cin, billDay);
+
+            if (sscanf(billDay.c_str(), "%d/%d/%d", &day, &month, &year) == 3 && chuantime(day, month, year))
+            {
+                validDate = true;
+            }
+            else
+            {
+                gotoXY(x + 7, y + 6);
+                trolaisua(x + 7, y + 4, billDay);
+            }
+        }
+        billDay = formatDate(billDay);
+
+        // Validate customer name
+        while (true)
+        {
+            gotoXY(x + 7, y + 9);
+            getline(cin, newNameCus);
+            if (!isNumeric(newNameCus))
+                break;
+            else
+                trolaisua(x + 7, y + 9, newNameCus);
+        }
+
+        // Validate customer address
+        while (true)
+        {
+            gotoXY(x + 7, y + 14);
+            getline(cin, newCusAddress);
+            if (!isNumeric(newCusAddress))
+                break;
+            else
+                trolaisua(x + 7, y + 14, newCusAddress);
+        }
+
+        // Validate customer phone number
+        while (true)
+        {
+            gotoXY(x + 7, y + 19);
+            getline(cin, newCusSdt);
+            if (isPhoneNumber(newCusSdt))
+                break;
+            else
+                trolaisua(x + 7, y + 19, newCusSdt);
+        }
+
+        // Calculate the total sum of the order
+        sum = this->Calculator();
+        // Generate a new customer code
+        CustomerNode *cus = this->customerHead;
+        bool customerExists = false;
+
+        // Check if customer already exists
+        while (cus != NULL)
+        {
+            if (cus->data.getSdtKH() == newCusSdt && cus->data.getDia_chi() == newCusAddress && cus->data.getSdtKH() == newCusSdt)
+            {
+                // Customer exists, add sum to existing customer's amount
+                cus->data.setSTDM(cus->data.getSo_tien_da_mua() + sum);
+                customerExists = true;
+                break;
+            }
+            cus = cus->next;
+        }
+
+        if (!customerExists)
+        {
+            // Generate a new customer code
+            cus = this->customerHead;
+            std::string cusCode;
+            while (cus != NULL)
+            {
+                cusCode = cus->data.getMaKH();
+                cus = cus->next;
+            }
+
+            if (cusCode.length() > 2 && std::all_of(cusCode.begin() + 2, cusCode.end(), ::isdigit))
+            {
+                int numberPart = std::stoi(cusCode.substr(2)) + 1;
+                cusCode = "KH" + std::to_string(numberPart).insert(0, 3 - std::to_string(numberPart).length(), '0');
+            }
+            else
+            {
+                cusCode = "KH001"; // Default customer code
+            }
+
+            // Create and add a new customer
+            Customer newCus(cusCode, newNameCus, newCusAddress, newCusSdt, sum);
+            this->Add_Customer(newCus);
+            newCusCode = cusCode;
+
+            std::ifstream infile("customers.txt");
+            if (!infile)
+            {
+                std::cerr << "File could not be opened!" << std::endl;
+                return;
+            }
+
+            int n;
+            infile >> n;
+            infile.ignore();
+            n += 1;
+            std::ofstream outfile("customers.txt", std::ios::in);
+            if (!outfile)
+            {
+                std::cerr << "File could not be opened for writing!" << std::endl;
+                return;
+            }
+            outfile << n;
+            outfile.seekp(0, std::ios::end);
+            for (int i = 0; i < types; i++)
+            {
+                outfile << "\n"
+                        << cusCode << "|" << newNameCus << "|" << newCusAddress << "|" << newCusSdt
+                        << "|" << sum;
+            }
+            outfile.close();
+            // Read the number of records
+        }
+        y = 3;
+        cus = this->customerHead;
+        while (cus != NULL)
+        {
+            cusCode = cus->data.getMaKH();
+            cus = cus->next;
+        }
+        newCusCode = cusCode;
     }
     system("cls");
-    y = 3;
-    cus = this->customerHead;
-    cusCode;
-    while (cus != NULL)
-    {
-        cusCode = cus->data.getMaKH();
-        cus = cus->next;
-    }
     newCusCode = cusCode;
+    x = 20, y = 5, a = 9;
     writeString(x + 28, y, L"[ HÓA ĐƠN BÁN HÀNG ]", 0x74);
     writeString(x, y + 2, L"Tên khách hàng:", 0x71);
     gotoXY(x + 20, y + 2);

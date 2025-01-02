@@ -259,9 +259,14 @@ inline int setKeyBoard()
         {
             return 5; // ESC
         }
+        else if (GetAsyncKeyState(VK_TAB) & 0x8000) // Kiểm tra phím Tab
+        {
+            return 9; // Tab
+        }
     }
     return 0;
 }
+
 inline int batphim()
 {
     int c = getch();
@@ -314,6 +319,68 @@ inline void writeString(int x, int y, const std::wstring &s, int color)
 
     // Reset the console mode back to text mode
     _setmode(_fileno(stdout), _O_TEXT);
+}
+inline void display_forgetPassword()
+{
+    // Xóa toàn bộ màn hình và thiết lập nền xám
+    system("cls");
+    SetConsoleBackgroundToGray();
+
+    // Vẽ khung chính
+    menuTable(40, 5, 40, 25);
+    writeString(50, 7, L"[FORGET PASSWORD]", 0x71);
+    // Vẽ label và textbox "New Username"
+    writeString(45, 9, L"Username", 0x71);
+    menuTable(45, 10, 30, 2); // Khung textbox New Username
+
+    // Vẽ label và textbox "New Password"
+    writeString(45, 14, L"New Password", 0x71);
+    menuTable(45, 15, 30, 2); // Khung textbox New Password
+
+    // Vẽ label và textbox "Confirm Password"
+    writeString(45, 19, L"Confirm Password", 0x71);
+    menuTable(45, 20, 30, 2); // Khung textbox Confirm Password
+
+    // Vẽ nút "Register"
+    menuTable(45, 24, 30, 2);
+    writeString(55, 25, L"Submit Now", 0x71);
+    menuTable(90, 5, 40, 15);
+    writeString(98, 6, L"[ Mật khẩu hợp lệ ]", 0x71);
+    writeString(92, 8, L"1. Chứa ít nhất 4 ký tự", 0x74);
+    writeString(92, 10, L"2. Chứa ít nhất 1 chữ cái viết hoa", 0x74);
+    writeString(92, 12, L"3. Chứa ít nhất 1 chữ cái viết thường", 0x74);
+    writeString(92, 14, L"4. Chứa ít nhất 1 chữ số", 0x74);
+}
+inline void display_register()
+{
+    // Xóa toàn bộ màn hình và thiết lập nền xám
+    system("cls");
+    SetConsoleBackgroundToGray();
+
+    // Vẽ khung chính
+    menuTable(40, 5, 40, 25);
+
+    // Vẽ label và textbox "New Username"
+    writeString(45, 8, L"New Username", 0x71);
+    menuTable(45, 10, 30, 2); // Khung textbox New Username
+
+    // Vẽ label và textbox "New Password"
+    writeString(45, 14, L"New Password", 0x71);
+    menuTable(45, 15, 30, 2); // Khung textbox New Password
+
+    // Vẽ label và textbox "Confirm Password"
+    writeString(45, 19, L"Confirm Password", 0x71);
+    menuTable(45, 20, 30, 2); // Khung textbox Confirm Password
+
+    // Vẽ nút "Register"
+    menuTable(45, 24, 30, 2);
+    writeString(55, 25, L"Register Now", 0x71);
+    menuTable(90, 5, 40, 15);
+    writeString(98, 6, L"[ Mật khẩu hợp lệ ]", 0x71);
+    writeString(92, 8, L"1. Chứa ít nhất 4 ký tự", 0x74);
+    writeString(92, 10, L"2. Chứa ít nhất 1 chữ cái viết hoa", 0x74);
+    writeString(92, 12, L"3. Chứa ít nhất 1 chữ cái viết thường", 0x74);
+    writeString(92, 14, L"4. Chứa ít nhất 1 chữ số", 0x74);
 }
 inline void display_login()
 {
@@ -467,6 +534,53 @@ inline void bangsanpham(int x, int y, int sl)
     writeString(x + 125, y + 1, L"SL", 0x71);
     writeString(x + 136, y + 1, L"Giá Bán", 0x71);
 }
+inline void bangkhanhhang(int x, int y, int sl)
+{
+    int i, j;
+    int c = 150;
+    sl = sl + 3;
+    for (i = x; i <= x + c; i++)
+    {
+        for (j = y; j <= y + sl; j++)
+        {
+            if (i == x || i == x + 20 || i == x + 50 || i == x + 80 || i == x + 100 ||
+                i == x + c)
+            {
+
+                // Drawing corners and intersections for clean table look
+                if (j == y && i != x && i != x + c)
+                    writeChar(i, j, L"┬");
+                else if (j == y && i == x)
+                    writeChar(i, j, L"┌");
+                else if (j == y && i == x + c)
+                    writeChar(i, j, L"┐");
+                else if (j == y + 2 && i != x && i != x + c)
+                    writeChar(i, j, L"┼");
+                else if (j == y + 2 && i == x)
+                    writeChar(i, j, L"├");
+                else if (j == y + 2 && i == x + c)
+                    writeChar(i, j, L"┤");
+                else if (j == y + sl && i != x && i != x + c)
+                    writeChar(i, j, L"┴");
+                else if (j == y + sl && i == x)
+                    writeChar(i, j, L"└");
+                else if (j == y + sl && i == x + c)
+                    writeChar(i, j, L"┘");
+                else
+                    writeChar(i, j, L"│");
+            }
+            else if (j == y || j == y + 2 || j == y + sl)
+            {
+                writeChar(i, j, L"─");
+            }
+        }
+    }
+    writeString(x + 10, y + 1, L"Mã KH", 0x71);
+    writeString(x + 30, y + 1, L"Họ và tên", 0x71);
+    writeString(x + 60, y + 1, L"Địa chỉ", 0x71);
+    writeString(x + 85, y + 1, L"SĐT", 0x71);
+    writeString(x + 104, y + 1, L"số tiền đã mua", 0x71);
+}
 inline void menuDisplay2(int x, int y, int sl, int number = 1, int sum = 1)
 {
     int i, j;
@@ -618,6 +732,67 @@ inline void Bill_Table(int x, int y, int sl, int number = 1, int sum = 1)
     {
         writeString(x + 3, y + 24, L"Nhấn nút [->] để tới trang tiếp theo, [<-] để quay về trang trước!!", 0x74);
         writeString(x + 85, y - 2, L"Trang: ", 0x74);
+        wcout << number << L"/" << sum;
+    }
+}
+inline void Account_Table(int x, int y, int sl, int number = 1, int sum = 1)
+{
+    int i, j;
+    int c = 60; // Giảm chiều rộng bảng vì bỏ cột Mật khẩu
+    // Lấy kích thước màn hình (giả sử bạn đã có hàm lấy chiều rộng và chiều cao màn hình)
+    int screenWidth = 120; // Thay giá trị này bằng chiều rộng màn hình
+    int screenHeight = 30; // Thay giá trị này bằng chiều cao màn hình
+
+    // Tính toán vị trí trung tâm
+    x = (screenWidth - c) / 2;       // Căn giữa theo chiều ngang
+    y = (screenHeight - sl - 3) / 2; // Căn giữa theo chiều dọc (trừ thêm khoảng header và footer)
+
+    for (i = x; i <= x + c; i++)
+    {
+        for (j = y; j <= y + sl; j++)
+        {
+            if (i == x || i == x + 10 || i == x + 30 || i == x + c)
+            {
+                // Điều chỉnh các đường kẻ cột
+                if (j == y && i != x && i != x + c)
+                    writeChar(i, j, L"┬");
+                else if (j == y && i == x)
+                    writeChar(i, j, L"┌");
+                else if (j == y && i == x + c)
+                    writeChar(i, j, L"┐");
+                else if (j == y + 2 && i != x && i != x + c)
+                    writeChar(i, j, L"┼");
+                else if (j == y + 2 && i == x)
+                    writeChar(i, j, L"├");
+                else if (j == y + 2 && i == x + c)
+                    writeChar(i, j, L"┤");
+                else if (j == y + sl && i != x && i != x + c)
+                    writeChar(i, j, L"┴");
+                else if (j == y + sl && i == x)
+                    writeChar(i, j, L"└");
+                else if (j == y + sl && i == x + c)
+                    writeChar(i, j, L"┘");
+                else
+                    writeChar(i, j, L"│");
+            }
+            else if (j == y || j == y + 2 || j == y + sl)
+            {
+                writeChar(i, j, L"─");
+            }
+        }
+    }
+
+    // Các tiêu đề cột
+    writeString(x + 3, y + 1, L"STT", 0x70);
+    writeString(x + 15, y + 1, L"Username", 0x70);
+    writeString(x + 37, y + 1, L"Role", 0x70);
+
+    // Hướng dẫn ESC và phân trang
+    writeString(x + 10, y - 1, L"Nhấn ESC để quay lại || Nhấn Tab để hiện menu", 0x74);
+    if (sum > 1)
+    {
+        writeString(x + 3, 25, L"[->] Tới trang tiếp, [<-] Quay về trang trước", 0x74);
+        writeString(x + 65, y - 2, L"Trang: ", 0x74);
         wcout << number << L"/" << sum;
     }
 }

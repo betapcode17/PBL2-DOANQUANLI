@@ -23,4 +23,4 @@ B021|The Midnight Library|Fantasy|Matt Haig|6|140000|2021
 B022|Atomic Habits|Self-Help|James Clear|14|180000|2018
 B023|The Subtle Art|Self-Help|Mark Manson|10|170000|2016
 B024|History of Tomorrow|Non-Fiction|Yuval Noah Harari|7|24000|2016
-B025|Doremon|cartoon|quoc dat|2|100000|2020
+B025|Doremon|cartoon|Đạt|2|100000|2020

@@ -1,5 +1,10 @@
-4
-quocdat dat 1
-dat dat 0
-datto quocdat 0
-TranDat quocdat 0
+9
+dat dat 1
+dattran 2 0
+quocdat Dat123 0
+TranDat datdeptrai 0
+quocdattran 2 0
+dattohoutaru Dat232 0
+dattohou dattranquoc 0
+dattohoutaru Dat232 0
+giahuy Giahuy123 0
